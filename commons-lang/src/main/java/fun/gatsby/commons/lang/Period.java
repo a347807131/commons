@@ -2,10 +2,8 @@ package fun.gatsby.commons.lang;
 
 import lombok.Getter;
 import lombok.ToString;
+import org.apache.commons.lang.time.DateUtils;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -23,11 +21,6 @@ public class Period {
         this.startDate = start;
         this.endDate = end;
     }
-
-//    public Period(String start, String end, DateFormat dateFormat)  {
-//        this.startDate = dateFormat.parse(start);
-//        this.endDate = dateFormat.parse(end);
-//    }
 
     public List<Period> divideByYear() {
         Calendar startCalendar = Calendar.getInstance();
@@ -55,6 +48,30 @@ public class Period {
             }
             startCalendar.add(Calendar.DAY_OF_YEAR, 1);
         }
+        return periods;
+    }
+
+    public List<Period> divideYear() {
+        return divideBy(Calendar.YEAR);
+    }
+
+    public List<Period> divideBy(int filed) {
+        LinkedList<Period> periods = new LinkedList<>();
+        Calendar startCalendar = Calendar.getInstance();
+        Calendar endCalendar = Calendar.getInstance();
+        startCalendar.setTime(startDate);
+        endCalendar.setTime(endDate);
+        int yearOfEndDate = endCalendar.get(filed);
+        int yearOfStartDate = startCalendar.get(filed);
+        var years = yearOfEndDate - yearOfStartDate + 1;
+        for (int i = 0; i < years - 1; i++) {
+            var sd = startCalendar.getTime();
+            startCalendar.add(filed, 1);
+            var ed = DateUtils.truncate(startCalendar, filed).getTime();
+            startCalendar.setTime(ed);
+            periods.add(new Period(sd, ed));
+        }
+        periods.add(new Period(startCalendar.getTime(), endDate));
         return periods;
     }
 
@@ -100,5 +117,17 @@ public class Period {
         List<Date> dates = List.of(startDate, endDate, period.startDate, period.endDate);
         List<Date> sortedDates = dates.stream().sorted(Date::compareTo).collect(Collectors.toList());
         return new Period(sortedDates.get(1), sortedDates.get(2));
+    }
+
+    public List<Period> uniformlyDivid(int num) {
+        long gap = endDate.getTime() - startDate.getTime();
+        long stepLen = gap / num;
+        LinkedList<Period> periods = new LinkedList<>();
+        for (int i = 0; i < num; i++) {
+            var s = new Date(startDate.getTime() + stepLen * i);
+            var e = new Date(startDate.getTime() + stepLen * (i + 1));
+            periods.add(new Period(s, e));
+        }
+        return periods;
     }
 }
