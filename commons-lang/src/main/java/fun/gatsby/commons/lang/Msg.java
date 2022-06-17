@@ -1,4 +1,4 @@
-package fun.gatsby.commons.data;
+package fun.gatsby.commons.lang;
 
 import lombok.Data;
 
@@ -22,6 +22,9 @@ public class Msg<T extends Serializable> {
     private int code;
     //提示信息
     private String msg;
+
+    private Msg() {
+    }
 
     public static <T extends Serializable> Msg<T> success(T data) {
         Msg<T> msg = new Msg<>();

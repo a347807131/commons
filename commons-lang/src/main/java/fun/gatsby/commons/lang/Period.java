@@ -3,6 +3,7 @@ package fun.gatsby.commons.lang;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,16 +19,15 @@ public class Period {
     Date startDate;
     Date endDate;
 
-    Period(Date start, Date end) {
+    public Period(Date start, Date end) {
         this.startDate = start;
         this.endDate = end;
     }
 
-    public Period(String start, String end, String format) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
-        this.startDate = dateFormat.parse(start);
-        this.endDate = dateFormat.parse(end);
-    }
+//    public Period(String start, String end, DateFormat dateFormat)  {
+//        this.startDate = dateFormat.parse(start);
+//        this.endDate = dateFormat.parse(end);
+//    }
 
     public List<Period> divideByYear() {
         Calendar startCalendar = Calendar.getInstance();
