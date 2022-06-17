@@ -8,7 +8,7 @@ public class MsgTest extends TestCase {
 
     public void testOf() {
         var msg =
-                Msg.of("123", 0, System.out.getClass());
+                Msg.of("123", 0, System.out);
         log.debug("{}", Msg.ok(msg));
     }
 }

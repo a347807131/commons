@@ -6,7 +6,6 @@ import java.io.Serializable;
 
 /**
  * 通用的返回的类
- *
  * @author Civin
  */
 @Data
@@ -39,7 +38,7 @@ public class Msg<T> implements Serializable {
     }
 
     public static <T> Msg<T> fail(T data) {
-        return of(MSG_FAIL, CODE_SUCCESS, data);
+        return of(MSG_FAIL, CODE_FAIL, data);
     }
 }
 
