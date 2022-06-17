@@ -51,4 +51,10 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>space-mvn-repo</id>
+            <url>https://maven.pkg.jetbrains.space/jgatsby/p/pj/mvn-repo</url>
+        </repository>
+    </distributionManagement>
 </project>
