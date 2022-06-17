@@ -38,7 +38,7 @@ public class PeriodTest extends TestCase {
     @Test
     public void testDivideByYear() throws ParseException {
         var period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-05"));
-        List<Period> periods = period.divideYear();
+        List<Period> periods = period.divideByYear();
         var p = periods.get(0);
         long gap = p.getEndDate().getTime() - p.getStartDate().getTime();
         periods.forEach(e -> {
