@@ -1,9 +1,15 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.lang.date;
 
 import lombok.Getter;
 import lombok.ToString;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -20,6 +26,12 @@ public class Period {
     public Period(Date start, Date end) {
         this.startDate = start;
         this.endDate = end;
+    }
+
+    public Period(String start, String end, String pattern) throws ParseException {
+        var format = new SimpleDateFormat(pattern);
+        this.startDate = format.parse(start);
+        this.endDate = format.parse(end);
     }
 
     public List<Period> divideByMonth() {
@@ -55,8 +67,8 @@ public class Period {
             //无交集
             return null;
         }
-        List<Date> dates = List.of(startDate, endDate, period.startDate, period.endDate);
-        List<Date> sortedDates = dates.stream().sorted(Date::compareTo).collect(Collectors.toList());
+        var dates = List.of(startDate, endDate, period.startDate, period.endDate);
+        var sortedDates = dates.stream().sorted(Date::compareTo).collect(Collectors.toList());
         return new Period(sortedDates.get(1), sortedDates.get(2));
     }
 

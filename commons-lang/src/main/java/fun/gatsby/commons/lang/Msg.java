@@ -11,9 +11,9 @@ import java.io.Serializable;
 @Data
 public class Msg<T> implements Serializable {
 
-    public static int CODE_SUCCESS = 100;
+    public static int CODE_OK = 100;
     public static int CODE_FAIL = 200;
-    public static String MSG_SUCCESS = "process successed";
+    public static String MSG_OK = "process successed";
     public static String MSG_FAIL = "process failed";
     //返回的数据
     T data;
@@ -34,7 +34,7 @@ public class Msg<T> implements Serializable {
     }
 
     public static <T> Msg<T> ok(T data) {
-        return of(MSG_SUCCESS, CODE_SUCCESS, data);
+        return of(MSG_OK, CODE_OK, data);
     }
 
     public static <T> Msg<T> fail(T data) {

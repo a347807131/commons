@@ -5,7 +5,7 @@
     <groupId>fun.gatsby</groupId>
     <artifactId>commons</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <modules>
         <module>commons-lang</module>
         <module>commons-utils</module>
@@ -13,7 +13,6 @@
     <name>commons</name>
     <description>commons</description>
     <properties>
-        <project.version>0.0.1-snapshot</project.version>
         <java.version>11</java.version>
     </properties>
     <dependencies>

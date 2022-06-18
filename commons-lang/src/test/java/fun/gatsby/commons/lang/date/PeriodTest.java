@@ -1,6 +1,8 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.lang.date;
 
+import fun.gatsby.commons.lang.date.Period;
 import junit.framework.TestCase;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,7 +28,6 @@ public class PeriodTest extends TestCase {
         Assert.assertEquals(intersected.endDate, period.endDate);
     }
 
-    @Test
     public void testUniformlyDivid() throws ParseException {
         Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-05"));
         List<Period> periods = period.uniformlyDivid(4);
@@ -35,7 +36,6 @@ public class PeriodTest extends TestCase {
         Assert.assertEquals(periods.get(2).startDate, dateFormat.parse("2022-02-03"));
     }
 
-    @Test
     public void testDivideByYear() throws ParseException {
         var period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-05"));
         List<Period> periods = period.divideByYear();
@@ -44,5 +44,9 @@ public class PeriodTest extends TestCase {
         periods.forEach(e -> {
             Assert.assertEquals(gap, e.endDate.getTime() - e.startDate.getTime());
         });
+    }
+
+    public void testGen() throws ParseException {
+        Period period = new Period("2022-02-01", "2022-02-05", DateFormatUtils.ISO_DATE_FORMAT.getPattern());
     }
 }
