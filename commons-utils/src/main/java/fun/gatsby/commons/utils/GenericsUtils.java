@@ -29,7 +29,7 @@ public class GenericsUtils {
      * @return 范型参数的实际类型, 如果没有实现ParameterizedType接口，即不支持泛型，所以直接返回
      * <code>Object.class</code>
      */
-    public static Class getSuperClassGenricType(Class clazz, int index) {
+    public static Class<?> getSuperClassGenricType(Class<?> clazz, int index) {
         Type genType = clazz.getGenericSuperclass();// 得到泛型父类
         // 如果没有实现ParameterizedType接口，即不支持泛型，直接返回Object.class
         if (!(genType instanceof ParameterizedType)) {
@@ -44,7 +44,7 @@ public class GenericsUtils {
         if (!(params[index] instanceof Class)) {
             return Object.class;
         }
-        return (Class) params[index];
+        return (Class<?>) params[index];
     }
 
     /**
@@ -55,7 +55,7 @@ public class GenericsUtils {
      * <code>Object.class</code>
      */
     @SuppressWarnings("unchecked")
-    public static Class getSuperClassGenricType(Class clazz) {
+    public static Class<?> getSuperClassGenricType(Class<?> clazz) {
         return getSuperClassGenricType(clazz, 0);
     }
 
@@ -88,7 +88,7 @@ public class GenericsUtils {
      * <code>Object.class</code>
      */
     @SuppressWarnings("unchecked")
-    public static Class getMethodGenericReturnType(Method method) {
+    public static Class<?> getMethodGenericReturnType(Method method) {
         return getMethodGenericReturnType(method, 0);
     }
 
@@ -101,8 +101,8 @@ public class GenericsUtils {
      * @return 输入参数的泛型参数的实际类型集合, 如果没有实现ParameterizedType接口，即不支持泛型，所以直接返回空集合
      */
     @SuppressWarnings("unchecked")
-    public static List<Class> getMethodGenericParameterTypes(Method method, int index) {
-        List<Class> results = new ArrayList<Class>();
+    public static List<Class<?>> getMethodGenericParameterTypes(Method method, int index) {
+        List<Class<?>> results = new ArrayList<>();
         Type[] genericParameterTypes = method.getGenericParameterTypes();
         if (index >= genericParameterTypes.length || index < 0) {
             throw new RuntimeException("你输入的索引" + (index < 0 ? "不能小于0" : "超出了参数的总数"));
@@ -112,7 +112,7 @@ public class GenericsUtils {
             ParameterizedType aType = (ParameterizedType) genericParameterType;
             Type[] parameterArgTypes = aType.getActualTypeArguments();
             for (Type parameterArgType : parameterArgTypes) {
-                Class parameterArgClass = (Class) parameterArgType;
+                Class<?> parameterArgClass = (Class<?>) parameterArgType;
                 results.add(parameterArgClass);
             }
             return results;
@@ -127,7 +127,7 @@ public class GenericsUtils {
      * @return 输入参数的泛型参数的实际类型集合, 如果没有实现ParameterizedType接口，即不支持泛型，所以直接返回空集合
      */
     @SuppressWarnings("unchecked")
-    public static List<Class> getMethodGenericParameterTypes(Method method) {
+    public static List<Class<?>> getMethodGenericParameterTypes(Method method) {
         return getMethodGenericParameterTypes(method, 0);
     }
 
@@ -140,7 +140,7 @@ public class GenericsUtils {
      * <code>Object.class</code>
      */
     @SuppressWarnings("all")
-    public static Class getFieldGenericType(Field field, int index) {
+    public static Class<?> getFieldGenericType(Field field, int index) {
         Type genericFieldType = field.getGenericType();
 
         if (genericFieldType instanceof ParameterizedType) {
@@ -149,7 +149,7 @@ public class GenericsUtils {
             if (index >= fieldArgTypes.length || index < 0) {
                 throw new RuntimeException("你输入的索引" + (index < 0 ? "不能小于0" : "超出了参数的总数"));
             }
-            return (Class) fieldArgTypes[index];
+            return (Class<?>) fieldArgTypes[index];
         }
         return Object.class;
     }
@@ -161,7 +161,7 @@ public class GenericsUtils {
      * <code>Object.class</code>
      */
     @SuppressWarnings("unchecked")
-    public static Class getFieldGenericType(Field field) {
+    public static Class<?> getFieldGenericType(Field field) {
         return getFieldGenericType(field, 0);
     }
 
@@ -175,9 +175,9 @@ public class GenericsUtils {
     public static String[] getColumnNames(String objClass) throws ClassNotFoundException {
         String[] wageStrArray = null;
         if (objClass != null) {
-            Class class1 = Class.forName(objClass);
+            Class<?> class1 = Class.forName(objClass);
             Field[] field = class1.getDeclaredFields();// 这里便是获得实体Bean中所有属性的方法
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < field.length; i++) {// 这里不多说了
 
                 sb.append(field[i].getName());
@@ -217,8 +217,8 @@ public class GenericsUtils {
      * @param objClass 实体类包含包名
      * @return
      */
-    public static Class getEntityClass(String objClass) {
-        Class entityClass = null;
+    public static Class<?> getEntityClass(String objClass) {
+        Class<?> entityClass = null;
         try {
             entityClass = Class.forName(objClass);
         } catch (ClassNotFoundException e) {
@@ -233,7 +233,7 @@ public class GenericsUtils {
      * @param clazz
      * @return
      */
-    public static Object getFieldValue(Class clazz) {
+    public static Object getFieldValue(Class<?> clazz) {
         return getFieldValue(clazz, 0);
     }
 
@@ -244,7 +244,7 @@ public class GenericsUtils {
      * @param index
      * @return
      */
-    public static Object getFieldValue(Class clazz, int index) {
+    public static Object getFieldValue(Class<?> clazz, int index) {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields
         ) {
@@ -264,7 +264,7 @@ public class GenericsUtils {
      * @param name
      * @return
      */
-    public static Object getFieldValueByName(Class clazz, String name) {
+    public static Object getFieldValueByName(Class<?> clazz, String name) {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
