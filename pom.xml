@@ -68,9 +68,13 @@
     </build>
 
     <distributionManagement>
+        <!--        <repository>-->
+        <!--            <id>space-mvn-repo</id>-->
+        <!--            <url>https://maven.pkg.jetbrains.space/jgatsby/p/pj/mvn-repo</url>-->
+        <!--        </repository>-->
         <repository>
-            <id>space-mvn-repo</id>
-            <url>https://maven.pkg.jetbrains.space/jgatsby/p/pj/mvn-repo</url>
+            <id>azure</id>
+            <url>https://pkgs.dev.azure.com/expressed/PJ/_packaging/public/maven/v1</url>
         </repository>
     </distributionManagement>
 </project>
