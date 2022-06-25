@@ -63,8 +63,8 @@ public class FileTypeUtils {
 
 		fileHead = fileHead.toUpperCase();
 
-		TypeFile[] fileTypes = TypeFile.values();
-		for (TypeFile type : fileTypes) {
+		FileType[] fileTypes = FileType.values();
+		for (FileType type : fileTypes) {
 			if (fileHead.startsWith(type.getValue())) {
 				return type.toString().toLowerCase();
 			}
@@ -78,7 +78,7 @@ public class FileTypeUtils {
 	/**
 	 * 文件类型枚取
 	 */
-	public enum TypeFile {
+	public enum FileType {
 
 		JPG("FFD8FF"),
 		PNG("89504E47"),
@@ -114,7 +114,7 @@ public class FileTypeUtils {
 
 		private String value = "";
 
-		private TypeFile(String value) {
+		private FileType(String value) {
 			this.value = value;
 		}
 
