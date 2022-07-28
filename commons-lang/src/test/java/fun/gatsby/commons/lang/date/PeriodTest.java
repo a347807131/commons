@@ -1,19 +1,22 @@
 package fun.gatsby.commons.lang.date;
 
-import fun.gatsby.commons.lang.date.Period;
+import fun.gatsby.commons.lang.Msg;
 import junit.framework.TestCase;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.junit.Assert;
-import org.junit.Test;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.List;
 
+@Slf4j
 public class PeriodTest extends TestCase {
 
     DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+
     public void testDivideByMonth() throws ParseException {
         Period period=new Period(dateFormat.parse("2018-01-01"),dateFormat.parse("2018-05-31"));
         List<Period> periods = period.divideByMonth();
@@ -48,5 +51,9 @@ public class PeriodTest extends TestCase {
 
     public void testGen() throws ParseException {
         Period period = new Period("2022-02-01", "2022-02-05", DateFormatUtils.ISO_DATE_FORMAT.getPattern());
+        Duration duration = Duration.ofSeconds(10);
+        List<Period> periods = period.gen(duration);
+        var msg = Msg.ok(duration);
+        log.debug(msg.toString());
     }
 }

@@ -4,12 +4,10 @@ import lombok.Getter;
 import lombok.ToString;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
 
-import java.text.DateFormat;
-import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -26,6 +24,10 @@ public class Period {
     public Period(Date start, Date end) {
         this.startDate = start;
         this.endDate = end;
+    }
+
+    public Period(String start, String end) throws ParseException {
+        this(start, end, DateFormatUtils.ISO_DATE_FORMAT.getPattern());
     }
 
     public Period(String start, String end, String pattern) throws ParseException {
@@ -82,5 +84,9 @@ public class Period {
             periods.add(new Period(s, e));
         }
         return periods;
+    }
+
+    public List<Period> gen(Duration duration) {
+        return null;
     }
 }

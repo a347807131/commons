@@ -4,8 +4,18 @@
 
 # 引入
 ```xml
+
 <repository>
     <id>azure</id>
     <url>https://pkgs.dev.azure.com/expressed/PJ/_packaging/public/maven/v1</url>
 </repository>
+```
+
+```xml
+
+<dependency>
+    <groupId>fun.gatsby</groupId>
+    <artifactId>commons-lang</artifactId>
+    <version>${common.version}</version>
+</dependency>
 ```
