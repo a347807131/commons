@@ -1,15 +1,12 @@
 package fun.gatsby.commons.lang.date;
 
-import fun.gatsby.commons.lang.Msg;
 import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.junit.Assert;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -26,7 +23,7 @@ public class PeriodTest extends TestCase {
     public void testIntersectedTo() throws ParseException {
         Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-05-15"));
         Period period2 = new Period(dateFormat.parse("2022-02-05"), dateFormat.parse("2022-05-31"));
-        Period intersected = period2.intersectedTo(period);
+        Period intersected = period2.intersectedWith(period);
         Assert.assertEquals(intersected.startDate, period2.startDate);
         Assert.assertEquals(intersected.endDate, period.endDate);
     }
@@ -49,11 +46,11 @@ public class PeriodTest extends TestCase {
         });
     }
 
-    public void testGen() throws ParseException {
-        Period period = new Period("2022-02-01", "2022-02-05", DateFormatUtils.ISO_DATE_FORMAT.getPattern());
-        Duration duration = Duration.ofSeconds(10);
-        List<Period> periods = period.gen(duration);
-        var msg = Msg.ok(duration);
-        log.debug(msg.toString());
+    public void testCompletedWith() throws ParseException {
+        Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-15"));
+        Period period2 = new Period(dateFormat.parse("2022-05-05"), dateFormat.parse("2022-05-31"));
+        Period completed = period2.completedWith(period);
+        Assert.assertEquals(completed.endDate, period2.startDate);
+        Assert.assertEquals(completed.startDate, period.endDate);
     }
 }

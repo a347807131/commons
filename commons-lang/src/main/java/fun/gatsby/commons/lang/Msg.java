@@ -13,7 +13,7 @@ public class Msg<T> implements Serializable {
 
     public static int CODE_OK = 100;
     public static int CODE_FAIL = 200;
-    public static String MSG_OK = "process successed";
+    public static String MSG_OK = "processed successfully";
     public static String MSG_FAIL = "process failed";
     //返回的数据
     T data;
@@ -37,7 +37,7 @@ public class Msg<T> implements Serializable {
         return of(MSG_OK, CODE_OK, data);
     }
 
-    public static <T> Msg<T> fail(T data) {
+    public static <T> Msg<T> nok(T data) {
         return of(MSG_FAIL, CODE_FAIL, data);
     }
 }

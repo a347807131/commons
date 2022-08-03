@@ -7,13 +7,17 @@ import org.apache.commons.lang.time.DateUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 日期段
+ *
+ * @author Gatsby
+ */
 @Getter
 @ToString
 public class Period {
@@ -21,11 +25,19 @@ public class Period {
     Date startDate;
     Date endDate;
 
+    /**
+     * @param start 开始日期
+     * @param end 结束日期
+     */
     public Period(Date start, Date end) {
         this.startDate = start;
         this.endDate = end;
     }
 
+    /**
+     * 默认日期转换格式：yyyy-MM-dd
+     * @see DateFormatUtils#ISO_DATE_FORMAT
+     */
     public Period(String start, String end) throws ParseException {
         this(start, end, DateFormatUtils.ISO_DATE_FORMAT.getPattern());
     }
@@ -64,7 +76,7 @@ public class Period {
         return periods;
     }
 
-    public Period intersectedTo(Period period) {
+    public Period intersectedWith(Period period) {
         if (endDate.before(period.startDate) || period.endDate.before(startDate)) {
             //无交集
             return null;
@@ -86,7 +98,20 @@ public class Period {
         return periods;
     }
 
-    public List<Period> gen(Duration duration) {
-        return null;
+    /**
+     * 获取两个时间段的补集，不包括正负无穷段
+     *
+     * @param period 时间段
+     * @return 补集
+     */
+    public Period completedWith(Period period) {
+        var intersectedPeriod = intersectedWith(period);
+        if (intersectedPeriod != null) {
+            return null;
+        }
+        var dates = List.of(startDate, endDate, period.startDate, period.endDate);
+        var sortedDates = dates.stream().sorted(Date::compareTo).collect(Collectors.toList());
+        return new Period(sortedDates.get(1), sortedDates.get(2));
     }
+
 }
