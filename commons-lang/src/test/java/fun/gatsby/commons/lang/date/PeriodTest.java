@@ -7,6 +7,7 @@ import org.junit.Assert;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -30,7 +31,7 @@ public class PeriodTest extends TestCase {
 
     public void testUniformlyDivid() throws ParseException {
         Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-05"));
-        List<Period> periods = period.uniformlyDivid(4);
+        List<Period> periods = period.uniformlyDivide(4);
         Assert.assertEquals(4, periods.size());
         Assert.assertEquals(periods.get(1).startDate, dateFormat.parse("2022-02-02"));
         Assert.assertEquals(periods.get(2).startDate, dateFormat.parse("2022-02-03"));
@@ -41,9 +42,7 @@ public class PeriodTest extends TestCase {
         List<Period> periods = period.divideByYear();
         var p = periods.get(0);
         long gap = p.getEndDate().getTime() - p.getStartDate().getTime();
-        periods.forEach(e -> {
-            Assert.assertEquals(gap, e.endDate.getTime() - e.startDate.getTime());
-        });
+        periods.forEach(e -> Assert.assertEquals(gap, e.endDate.getTime() - e.startDate.getTime()));
     }
 
     public void testCompletedWith() throws ParseException {
@@ -52,5 +51,18 @@ public class PeriodTest extends TestCase {
         Period completed = period2.completedWith(period);
         Assert.assertEquals(completed.endDate, period2.startDate);
         Assert.assertEquals(completed.startDate, period.endDate);
+    }
+
+    public void testGen() {
+        Duration p2D = Duration.parse("P2D");
+        System.out.println(p2D.getSeconds());
+    }
+
+    public void testDivideByDuration() throws ParseException {
+        Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-05"));
+        List<Period> periods = period.divideByDuration(Duration.parse("P2D"));
+        Assert.assertEquals(3, periods.size());
+        Assert.assertEquals(periods.get(1).startDate, dateFormat.parse("2022-02-03"));
+        Assert.assertEquals(periods.get(2).endDate, dateFormat.parse("2022-02-05"));
     }
 }
