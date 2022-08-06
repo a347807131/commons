@@ -1,5 +1,6 @@
 package fun.gatsby.commons.lang.date;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.commons.lang.time.DateFormatUtils;
@@ -20,11 +21,14 @@ import java.util.stream.Collectors;
  * @author Gatsby
  */
 @Getter
+@EqualsAndHashCode
 @ToString
 public class Period {
 
     static final Date DEFAULT_START_DATE = new Date(0);
     static final Date DEFAULT_END_DATE = new Date(Long.MAX_VALUE);
+
+    static final Period DEFAULT_PERIOD = new Period(DEFAULT_START_DATE, DEFAULT_END_DATE);
     /**
      * 默认日期转换格式：yyyy-MM-dd
      *
@@ -35,11 +39,11 @@ public class Period {
     /**
      * 开始日期
      */
-    Date startDate;
+    final Date startDate;
     /**
      * 结束日期
      */
-    Date endDate;
+    final Date endDate;
 
     private Period() {
         this.startDate = DEFAULT_START_DATE;
@@ -73,6 +77,19 @@ public class Period {
         return divideBy(Calendar.YEAR);
     }
 
+    /**
+     * 根据日期字段分割日期
+     *
+     * @param field 日期字段
+     * @return 分割后的日期段
+     * @see Calendar
+     * <pre>
+     *     Calendar.YEAR - 年<br>
+     *     Calendar.MONTH - 月<br>
+     *     Calendar.DATE - 日<br>
+     *     ...
+     * </pre>
+     */
     public List<Period> divideBy(int field) {
         LinkedList<Period> periods = new LinkedList<>();
         Calendar startCalendar = Calendar.getInstance();
@@ -131,11 +148,6 @@ public class Period {
         return periods;
     }
 
-    public void gen() {
-        Duration p2D = Duration.parse("P2D");
-        System.out.println(p2D.toString());
-    }
-
     public List<Period> divideByDuration(Duration duration) {
         long gap = endDate.getTime() - startDate.getTime();
         long len = gap / (duration.getSeconds() * 1000);
@@ -154,4 +166,5 @@ public class Period {
         }
         return periods;
     }
+
 }
