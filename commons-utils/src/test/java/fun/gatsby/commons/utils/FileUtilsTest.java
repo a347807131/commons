@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,5 +25,6 @@ public class FileUtilsTest extends TestCase {
             FileUtils.fetchFileRecursively(list,new File("./"));
         }
         log.info("数量：{}",list.size());
+
     }
 }

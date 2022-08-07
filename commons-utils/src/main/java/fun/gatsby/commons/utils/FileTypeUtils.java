@@ -114,7 +114,7 @@ public class FileTypeUtils {
 
 		private String value = "";
 
-		private FileType(String value) {
+		FileType(String value) {
 			this.value = value;
 		}
 

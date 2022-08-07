@@ -1,5 +1,6 @@
 package fun.gatsby.commons.lang;
 
+import fun.gatsby.commons.lang.dto.Msg;
 import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
 

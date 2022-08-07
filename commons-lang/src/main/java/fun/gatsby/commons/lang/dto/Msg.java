@@ -1,4 +1,4 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.lang.dto;
 
 import lombok.Data;
 

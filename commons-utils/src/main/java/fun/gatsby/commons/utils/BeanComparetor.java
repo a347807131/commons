@@ -23,7 +23,7 @@ public class BeanComparetor {
             Map<String, String> mapOfO2 = BeanUtils.describe(o2);
             Set<String> commonKeys = mapOfO1.keySet().stream().filter(mapOfO2::containsKey).collect(Collectors.toSet());
             if (commonKeys.size() == 0) {
-                log.warn("no common fields exits in the args to compare with each other");
+                log.warn("no common field exits in the args to compare with each other");
                 return false;
             }
             for (String commonKey : commonKeys) {
@@ -34,7 +34,7 @@ public class BeanComparetor {
                     if (ignoredFields.contains(commonKey)) {
                         continue;
                     }
-                    log.warn("{}' filed {} compared false ({}):({})", o1.getClass().getSimpleName(), commonKey, s1, s2);
+                    log.warn("{}.{} compared false ({}):({})", o1.getClass().getSimpleName(), commonKey, s1, s2);
                     return false;
                 }
             }
