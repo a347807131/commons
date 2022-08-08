@@ -24,7 +24,7 @@ public class PeriodTest extends TestCase {
     public void testIntersectedTo() throws ParseException {
         Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-05-15"));
         Period period2 = new Period(dateFormat.parse("2022-02-05"), dateFormat.parse("2022-05-31"));
-        Period intersected = period2.intersectedWith(period);
+        Period intersected = period2.intersecteWith(period);
         Assert.assertEquals(intersected.startDate, period2.startDate);
         Assert.assertEquals(intersected.endDate, period.endDate);
     }
@@ -48,7 +48,7 @@ public class PeriodTest extends TestCase {
     public void testCompletedWith() throws ParseException {
         Period period = new Period(dateFormat.parse("2022-02-01"), dateFormat.parse("2022-02-15"));
         Period period2 = new Period(dateFormat.parse("2022-05-05"), dateFormat.parse("2022-05-31"));
-        Period completed = period2.completedWith(period);
+        Period completed = period2.completeWith(period);
         Assert.assertEquals(completed.endDate, period2.startDate);
         Assert.assertEquals(completed.startDate, period.endDate);
     }

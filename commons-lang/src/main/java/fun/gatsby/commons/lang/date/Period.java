@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class Period {
+public class Period implements Comparable<Period> {
 
     static final Date DEFAULT_START_DATE = new Date(0);
     static final Date DEFAULT_END_DATE = new Date(Long.MAX_VALUE);
@@ -45,7 +45,7 @@ public class Period {
      */
     final Date endDate;
 
-    private Period() {
+    Period() {
         this.startDate = DEFAULT_START_DATE;
         this.endDate = DEFAULT_END_DATE;
     }
@@ -67,6 +67,11 @@ public class Period {
         var format = new SimpleDateFormat(pattern);
         this.startDate = format.parse(start);
         this.endDate = format.parse(end);
+    }
+
+    public Period(long left, long right) {
+        this.startDate = new Date(left);
+        this.endDate = new Date(right);
     }
 
     public List<Period> divideByMonth() {
@@ -110,7 +115,7 @@ public class Period {
         return periods;
     }
 
-    public Period intersectedWith(Period period) {
+    public Period intersecteWith(Period period) {
         if (endDate.before(period.startDate) || period.endDate.before(startDate)) {
             //无交集
             return null;
@@ -121,13 +126,23 @@ public class Period {
     }
 
     /**
+     * 并
+     *
+     * @param period
+     * @return
+     */
+    public Period unionWith(Period period) {
+        return null;
+    }
+
+    /**
      * 获取两个时间段的补集，不包括正负无穷段
      *
      * @param period 时间段
      * @return 补集
      */
-    public Period completedWith(Period period) {
-        var intersectedPeriod = intersectedWith(period);
+    public Period completeWith(Period period) {
+        var intersectedPeriod = intersecteWith(period);
         if (intersectedPeriod != null) {
             return null;
         }
@@ -167,4 +182,8 @@ public class Period {
         return periods;
     }
 
+    @Override
+    public int compareTo(Period period) {
+        return startDate.compareTo(period.startDate);
+    }
 }
