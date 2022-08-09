@@ -11,7 +11,7 @@ import java.util.UUID;
  * @Date: 2022/3/7 15:31
  */
 @Data
-public class TaskInfo {
+public class TaskGroup {
 
     /**
      * 唯一标识
@@ -29,14 +29,16 @@ public class TaskInfo {
     private LinkedList<ITask> taskQueue;
 
 
-    public TaskInfo(int id, String name, LinkedList<ITask> taskQueue) {
+    public TaskGroup(int id, String name, LinkedList<ITask> taskQueue) {
         this.id = id;
         this.name = name;
         this.taskQueue = taskQueue;
     }
 
-    public TaskInfo(LinkedList<ITask> taskQueue) {
-        this.id = UUID.randomUUID().hashCode();
+    public TaskGroup(LinkedList<ITask> taskQueue) {
+        int code = UUID.randomUUID().hashCode();
+        this.id = code < 0 ? -code : code;
+        this.name = "任务组" + id;
         this.taskQueue = taskQueue;
     }
 }

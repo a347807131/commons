@@ -8,21 +8,21 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
-public class FileUtilsTest extends TestCase {
-    int times=1024;
+public class FileFetchUtilsTest extends TestCase {
+    int times = 1024;
 
     public void testCountFileRecursively() {
-        int count=0;
+        int count = 0;
         for (int i = 0; i < times; i++) {
-            count+=FileUtils.countFileRecursively(new File("./"));
+            count += FileFetchUtils.countFileRecursively(new File("./"));
         }
-        log.info("数量：{}",count);
+        log.info("数量：{}", count);
     }
 
     public void testFetchFileRecursively() {
         List<File> list = new LinkedList<>();
         for (int i = 0; i < times; i++) {
-            FileUtils.fetchFileRecursively(list,new File("./"));
+            FileFetchUtils.fetchFileRecursively(list, new File("./"));
         }
         log.info("数量：{}",list.size());
 

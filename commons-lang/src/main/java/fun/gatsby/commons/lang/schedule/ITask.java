@@ -3,10 +3,6 @@ package fun.gatsby.commons.lang.schedule;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * @Author: dinghao
- * @Date: 2022/3/7 15:37
- */
 public interface ITask extends Runnable {
 
     /**

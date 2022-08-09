@@ -26,7 +26,7 @@ public class Scheduler {
     /**
      * 执行计划队列数组
      */
-    private final LinkedBlockingQueue<ITask>[] planQueueArray;
+    private final LinkedBlockingQueue<ITask>[] taskQueueArray;
     /**
      * 允许并行执行的线程池
      */
@@ -44,9 +44,9 @@ public class Scheduler {
      */
     int queueSize;
     /**
-     * 任务信息数组
+     * 协助判断，是否线程池的任务全部结束
      */
-    private TaskInfo[] taskInfos;
+    private final AtomicInteger count;
     /**
      * 执行模式：
      * 1：所有任务信息都执行
@@ -65,12 +65,10 @@ public class Scheduler {
      * model = 2,4 时有效
      */
     private ArrayList<Integer> indexList = new ArrayList<>();
-
-
     /**
-     * 协助判断，是否线程池的任务全部结束
+     * 任务信息数组
      */
-    private AtomicInteger count;
+    private TaskGroup[] taskGroups;
 
     /**
      * 调度器的执行状态
@@ -81,14 +79,14 @@ public class Scheduler {
     /**
      * 构造器
      *
-     * @param taskInfos 任务数组
-     * @param nThrends  同时执行任务中的计划线程数
-     * @param queueSize 计划执行队列
-     * @param model     执行模式 1：所有任务信息都执行 2：先执行部分任务，执行完后再执行其他任务
-     * @param modelSize 每批执行任务的数量
+     * @param taskGroups 任务数组
+     * @param nThrends   同时执行任务中的计划线程数
+     * @param queueSize  计划执行队列
+     * @param model      执行模式 1：所有任务信息都执行 2：先执行部分任务，执行完后再执行其他任务
+     * @param modelSize  每批执行任务的数量
      */
-    public Scheduler(TaskInfo[] taskInfos, int nThrends, int queueNum, int queueSize, int model, Integer modelSize) {
-        this.taskInfos = taskInfos;
+    public Scheduler(TaskGroup[] taskGroups, int nThrends, int queueNum, int queueSize, int model, Integer modelSize) {
+        this.taskGroups = taskGroups;
         this.nThrends = nThrends;
         this.queueNum = queueNum;
         this.queueSize = queueSize;
@@ -96,32 +94,32 @@ public class Scheduler {
         this.model = model;
 
         if (this.model < 3) {
-            this.planQueueArray = new LinkedBlockingQueue[1];
-            this.planQueueArray[0] = new LinkedBlockingQueue<>(this.queueSize);
+            this.taskQueueArray = new LinkedBlockingQueue[1];
+            this.taskQueueArray[0] = new LinkedBlockingQueue<>(this.queueSize);
         } else {
             // 初始化队列数组
-            this.planQueueArray = new LinkedBlockingQueue[this.queueNum];
-            IntStream.range(0, this.queueNum).forEach(i -> this.planQueueArray[i] = new LinkedBlockingQueue<>(this.queueSize));
+            this.taskQueueArray = new LinkedBlockingQueue[this.queueNum];
+            IntStream.range(0, this.queueNum).forEach(i -> this.taskQueueArray[i] = new LinkedBlockingQueue<>(this.queueSize));
         }
 
         // modelSize只有在等于2,4有效
         if (this.model == 2 || this.model == 4) {
-            this.modelSize = modelSize > taskInfos.length ? taskInfos.length : modelSize;
+            this.modelSize = modelSize > taskGroups.length ? taskGroups.length : modelSize;
         }
 
-        count = countITask();
+        count = countTask();
     }
 
-    public Scheduler(TaskInfo[] taskInfos, int nThrends, int model, Integer modelSize) {
-        this(taskInfos, nThrends, nThrends, 100, model, modelSize);
+    public Scheduler(TaskGroup[] taskGroups, int nThrends, int model, Integer modelSize) {
+        this(taskGroups, nThrends, nThrends, 100, model, modelSize);
     }
 
-    public Scheduler(TaskInfo[] taskInfos, int nThrends) {
-        this(taskInfos, nThrends, nThrends, 100, 1, null);
+    public Scheduler(TaskGroup[] taskGroups, int nThrends) {
+        this(taskGroups, nThrends, nThrends, 100, 1, null);
     }
 
-    public Scheduler(TaskInfo[] taskInfos) {
-        this(taskInfos, 10, 10, 100, 1, null);
+    public Scheduler(TaskGroup[] taskGroups) {
+        this(taskGroups, 10, 10, 100, 1, null);
     }
 
     /**
@@ -129,10 +127,10 @@ public class Scheduler {
      *
      * @return /
      */
-    private AtomicInteger countITask() {
+    private AtomicInteger countTask() {
         int sum = 0;
-        for (int i = 0; i < this.taskInfos.length; i++) {
-            sum += this.taskInfos[i].getTaskQueue().size();
+        for (TaskGroup taskGroup : this.taskGroups) {
+            sum += taskGroup.getTaskQueue().size();
         }
         return new AtomicInteger(sum);
     }
@@ -171,7 +169,7 @@ public class Scheduler {
      */
     public void run() {
         if (this.status) {
-            log.warn("任务处于启动状态");
+            log.warn("Scheuler未就绪");
             return;
         }
         this.status = true;
@@ -180,14 +178,14 @@ public class Scheduler {
         // 循环执行执行计划
         while (this.status) {
             // 所有执行计划执行完后，退出
-            if (this.taskInfos.length <= 0) {
+            if (this.taskGroups.length == 0) {
                 if (this.model < 3) {
-                    if (this.planQueueArray[0].size() == 0) {
+                    if (this.taskQueueArray[0].size() == 0) {
                         this.status = false;
                         break;
                     }
                 } else {
-                    ArrayList<Integer> notEmptyIndex = getNotEmptyIndex(this.planQueueArray);
+                    ArrayList<Integer> notEmptyIndex = getNotEmptyIndex(this.taskQueueArray);
                     if (CollUtil.isEmpty(notEmptyIndex)) {
                         this.status = false;
                         break;
@@ -199,32 +197,29 @@ public class Scheduler {
             execute();
 
         }
-        int size;
-        // 所有线程执行完毕出循环
-        for (; ; ) {
-            size = this.count.get();
-            if (size == 0) {
-                break;
-            }
-        }
+//        int size;
+//        // 所有线程执行完毕出循环
+//        do {
+//            size = this.count.get();
+//        } while (size != 0);
 
         //停止线程池
-        this.loopExecutor.shutdownNow();
-        for (; ; ) {
-            //只有当线程池中所有线程完成任务时才会返回true，并且需要先调用线程池的shutdown方法或者shutdownNow方法。
-            if (this.loopExecutor.isTerminated()) {
-                System.out.println("执行结束！");
-                break;
-            }
-        }
-
+        this.loopExecutor.shutdown();
+        System.out.println("任务执行完毕");
+//        for (; ; ) {
+//            //只有当线程池中所有线程完成任务时才会返回true，并且需要先调用线程池的shutdown方法或者shutdownNow方法。
+//            if (this.loopExecutor.isTerminated()) {
+//                System.out.println("执行结束！");
+//                break;
+//            }
+//        }
     }
 
     private void execute() {
         if (this.model < 3) {
             try {
                 // 获取一个执行计划
-                ITask plan = this.planQueueArray[0].take();
+                ITask plan = this.taskQueueArray[0].take();
                 // 执行计划
                 this.loopExecutor.execute(() -> plan.doWork(this.count));
             } catch (InterruptedException e) {
@@ -234,17 +229,17 @@ public class Scheduler {
             this.loopExecutor.execute(() -> {
                 try {
                     // 获取一个执行计划
-                    ITask plan = null;
+                    ITask plan;
                     // 获取线程id
                     String name = Thread.currentThread().getName();
                     int lastIndexOf = name.lastIndexOf("-");
                     int id = Integer.parseInt(name.substring(lastIndexOf + 1));
-                    ArrayList<Integer> notEmptyIndex2 = getNotEmptyIndex(this.planQueueArray);
+                    ArrayList<Integer> notEmptyIndex2 = getNotEmptyIndex(this.taskQueueArray);
                     Integer index = notEmptyIndex2.stream().filter(item -> item % this.nThrends == (id - 1)).findAny().orElse(null);
                     if (index == null) {
                         return;
                     }
-                    LinkedBlockingQueue<ITask> plans = this.planQueueArray[index];
+                    LinkedBlockingQueue<ITask> plans = this.taskQueueArray[index];
                     if (plans.size() > 0) {
                         plan = plans.take();
                         plan.doWork(this.count);
@@ -256,10 +251,10 @@ public class Scheduler {
         }
     }
 
-    private ArrayList<Integer> getNotEmptyIndex(LinkedBlockingQueue<ITask>[] planQueueArray) {
+    private ArrayList<Integer> getNotEmptyIndex(LinkedBlockingQueue<ITask>[] taskQueueArray) {
         ArrayList<Integer> indexArray = new ArrayList<>();
-        for (int i = 0; i < planQueueArray.length; i++) {
-            if (!CollUtil.isEmpty(planQueueArray[i])) {
+        for (int i = 0; i < taskQueueArray.length; i++) {
+            if (!taskQueueArray[i].isEmpty()) {
                 indexArray.add(i);
             }
         }
@@ -273,35 +268,30 @@ public class Scheduler {
         new Thread(() -> {
             while (this.status) {
                 // 任务信息数组数量
-                int length = this.taskInfos.length;
+                int length = this.taskGroups.length;
                 // 执行完结束线程
-                if (length <= 0) {
+                if (length == 0) {
                     break;
                 }
                 // 获取添加执行计划的的任务索引值
                 int index = getIndexOfModel(this.model, length);
-                TaskInfo taskInfo = null;
-                try {
-                    taskInfo = this.taskInfos[index];
+                TaskGroup taskGroup = this.taskGroups[index];
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                LinkedList<ITask> plans = taskInfo.getTaskQueue();
+                LinkedList<ITask> plans = taskGroup.getTaskQueue();
                 if (plans.size() > 0) {
                     try {
                         if (this.model >= 3) {
-                            int index2 = taskInfo.getId() % this.planQueueArray.length;
-                            this.planQueueArray[index2].put(plans.removeFirst());
+                            int index2 = taskGroup.getId() % this.taskQueueArray.length;
+                            this.taskQueueArray[index2].put(plans.removeFirst());
                         } else {
-                            this.planQueueArray[0].put(plans.removeFirst());
+                            this.taskQueueArray[0].put(plans.removeFirst());
                         }
                     } catch (InterruptedException e) {
                         log.error("向执行计划队列放入计划异常", e);
+                        throw new RuntimeException(e);
                     }
                 } else {
-                    this.taskInfos = reBuildTaskInfos(this.taskInfos, index);
+                    this.taskGroups = reBuildTaskInfos(this.taskGroups, index);
                 }
             }
         }).start();
@@ -332,15 +322,15 @@ public class Scheduler {
     /**
      * 重新构建任务信息数组
      *
-     * @param taskInfos 原来任务信息数组
-     * @param index     需要移除的任务信息
+     * @param taskGroups 原来任务信息数组
+     * @param index      需要移除的任务信息
      * @return 新的任务信息数组
      */
-    private TaskInfo[] reBuildTaskInfos(TaskInfo[] taskInfos, int index) {
-        TaskInfo[] newTaskINfo = new TaskInfo[taskInfos.length - 1];
-        for (int j = 0, i = 0; i < taskInfos.length; i++) {
+    private TaskGroup[] reBuildTaskInfos(TaskGroup[] taskGroups, int index) {
+        TaskGroup[] newTaskINfo = new TaskGroup[taskGroups.length - 1];
+        for (int j = 0, i = 0; i < taskGroups.length; i++) {
             if (i != index) {
-                newTaskINfo[j] = taskInfos[i];
+                newTaskINfo[j] = taskGroups[i];
                 j++;
             }
         }
