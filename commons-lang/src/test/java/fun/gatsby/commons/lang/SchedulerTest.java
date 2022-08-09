@@ -15,8 +15,8 @@ import java.util.stream.IntStream;
  */
 public class SchedulerTest extends TestCase {
     public void test() {
-        int userSize = 100;
-        int jobSize = 1000;
+        int userSize = 10;
+        int jobSize = 100;
 
         TaskGroup[] taskGroups = new TaskGroup[userSize];
 
@@ -31,7 +31,8 @@ public class SchedulerTest extends TestCase {
         });
 
 
-        Scheduler scheder = new Scheduler(taskGroups, 3, 10, 100, 3, 2);
+        Scheduler scheder = new Scheduler(taskGroups, 4, 10, 100, 1, 2);
+//        Scheduler scheder = new Scheduler(20, taskGroups);
         scheder.run();
     }
 
@@ -48,6 +49,11 @@ class MyPlan implements ITask {
     @Override
     public void run() {
         System.out.println(Thread.currentThread().getName() + ":" + name);
-        //        throw new RuntimeException("异常");
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        //        throw nw RuntimeException("异常");
     }
 }
