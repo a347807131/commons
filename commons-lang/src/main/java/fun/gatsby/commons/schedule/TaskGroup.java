@@ -65,7 +65,9 @@ public class TaskGroup {
         return taskQueue.add(task);
     }
 
+    volatile String state = null;
     public synchronized int onTaskException(Runnable task) {
+        state = "ERROR";
         if (mod == 1) {
             int size = taskQueue.size();
             taskQueue.clear();

@@ -32,7 +32,6 @@ public class SchedulerTest extends TestCase {
         scheder.run();
 
     }
-
 }
 
 /**
@@ -44,14 +43,15 @@ class MyPlan implements Runnable {
 
     @Override
     public void run() {
-        System.out.println(Thread.currentThread().getName() + ":" + name);
-
+//        System.out.println(Thread.currentThread().getName() + ":" + name);
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        throw new RuntimeException("error");
+        if (name.startsWith("用户9")) {
+            throw new RuntimeException("error");
+        }
 
     }
 }

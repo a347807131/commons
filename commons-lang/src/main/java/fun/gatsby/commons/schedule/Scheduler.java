@@ -163,6 +163,10 @@ public class Scheduler {
                 TaskGroup taskGroup = taskGroupMap.get(finalTask);
                 int sizeToDecrease = 1;
                 try {
+                    if ("ERROR".equals(taskGroup.state)) {
+                        taskGroups.remove(taskGroup);
+                        return;
+                    }
                     finalTask.run();
 //                        if (taskGroup.getTaskQueue().size() == 0) {
 ////                            //TODO 还得拍段队列中是否还存在该任务组的任务，如果不存在，则可以调用taskGroups的成功回调函数
@@ -170,7 +174,7 @@ public class Scheduler {
 //                                taskGroup.callback();
 //                        }
                 } catch (Exception e) {
-                    log.error("执行任务出错！", e);
+                    log.error("执行任务出错！{}", taskGroup.getId(), e);
                     sizeToDecrease = taskGroup.onTaskException(finalTask);
                 } finally {
                     // 当任务执行完毕，将任务数减1˛
