@@ -24,7 +24,7 @@ public class SchedulerTest extends TestCase {
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
-                taskGroup.addTask(myPlan);
+                taskGroup.append(myPlan);
             }
         });
 
@@ -43,7 +43,6 @@ class MyPlan implements Runnable {
 
     @Override
     public void run() {
-//        System.out.println(Thread.currentThread().getName() + ":" + name);
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
