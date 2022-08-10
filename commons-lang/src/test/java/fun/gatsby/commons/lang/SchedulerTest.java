@@ -16,19 +16,19 @@ public class SchedulerTest extends TestCase {
         int userSize = 10;
         int jobSize = 100;
 
-        TaskGroup[] taskGroups = new TaskGroup[userSize];
+        TaskGroup[] taskGroupTS = new TaskGroup[userSize];
 
         IntStream.range(0, userSize).parallel().forEach(i -> {
-            TaskGroup taskGroup = new TaskGroup();
-            taskGroups[i] = taskGroup;
+            TaskGroup taskGroupT = new TaskGroup();
+            taskGroupTS[i] = taskGroupT;
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
-                taskGroup.append(myPlan);
+                taskGroupT.append(myPlan);
             }
         });
 
-        Scheduler scheder = new Scheduler(4, 1, List.of(taskGroups));
+        Scheduler scheder = new Scheduler(4, 1, List.of(taskGroupTS));
         scheder.run();
 
     }

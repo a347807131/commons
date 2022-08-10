@@ -4,9 +4,7 @@ package fun.gatsby.commons.schedule;
 import cn.hutool.core.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,8 +13,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Gatsby
- * @date 2022/3/7 15:29
- * @see <a href="https://blog.csdn.net/haohao_ding/article/details/123404531"</a>
  * @see <img src="https://img-blog.csdnimg.cn/883009304fb942b2b20a14d14d85c9fd.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAaGFvaGFvX2Rpbmc=,size_20,color_FFFFFF,t_70,g_se,x_16">
  */
 @Slf4j
@@ -51,49 +47,33 @@ public class Scheduler {
 
     private volatile boolean cancelled = false;
 
-    Map<Runnable, TaskGroup> taskGroupMap;
-
     /**
      * 构造器
      *
-     * @param taskGroups 任务数组
+     * @param TaskGroups 任务数组
      * @param nThrends   同时执行任务中的任务线程数
      * @param queueSize  任务执行队列
      * @param mode       执行模式 1：所有任务信息都执行 2：先执行部分任务，执行完后再执行其他任务
      */
-    public Scheduler(int nThrends, int queueSize, int mode, List<TaskGroup> taskGroups) {
-        this.taskGroups = new CopyOnWriteArrayList<>(taskGroups);
+    public Scheduler(int nThrends, int queueSize, int mode, List<TaskGroup> TaskGroups) {
+        this.taskGroups = new CopyOnWriteArrayList<>(TaskGroups);
         this.nThrends = nThrends;
         this.queueSize = queueSize;
-        this.loopExecutor = Executors.newFixedThreadPool(this.nThrends + 1);
+        this.loopExecutor = Executors.newFixedThreadPool(this.nThrends);
         this.mode = mode;
         this.blockingTaskQueue = new LinkedBlockingQueue<>(queueSize);
-
-
-        int mapSize = 0;
-        for (TaskGroup taskGroup : taskGroups) {
-            mapSize += taskGroup.getTaskQueue().size();
-        }
-
-        this.taskGroupMap = new HashMap<>(mapSize);
-        this.taskGroups.forEach(taskGroup -> {
-            taskGroup.getTaskQueue().forEach(task -> {
-                taskGroupMap.put(task, taskGroup);
-            });
-        });
-
     }
 
-    public Scheduler(int nThrends, int mode, List<TaskGroup> taskGroups) {
-        this(nThrends, 2 << 7, mode, taskGroups);
+    public Scheduler(int nThrends, int mode, List<TaskGroup> TaskGroups) {
+        this(nThrends, 2 << 7, mode, TaskGroups);
     }
 
-    public Scheduler(int nThrends, List<TaskGroup> taskGroups) {
-        this(nThrends, 1, taskGroups);
+    public Scheduler(int nThrends, List<TaskGroup> TaskGroups) {
+        this(nThrends, 1, TaskGroups);
     }
 
-    public Scheduler(int nThrends, TaskGroup... taskGroups) {
-        this(nThrends, 1, List.of(taskGroups));
+    public Scheduler(int nThrends, TaskGroup... TaskGroups) {
+        this(nThrends, 1, List.of(TaskGroups));
     }
 
     public int getnThrends() {
@@ -147,10 +127,7 @@ public class Scheduler {
             }
 
             final Runnable finalTask = task;
-            this.loopExecutor.execute(() -> {
-                TaskGroup taskGroup = taskGroupMap.get(finalTask);
-                taskGroup.runTask(finalTask);
-            });
+            this.loopExecutor.execute(finalTask);
         }
     }
 
@@ -158,7 +135,7 @@ public class Scheduler {
      * 开启一个线程，持续向执行任务队列添加执行任务，直到所有的任务任务添加完
      */
     private void putTaskToQueueAsync() {
-        loopExecutor.execute(() -> {
+        new Thread(() -> {
             while (!cancelled) {
                 // 任务信息数组数量
                 int length = this.taskGroups.size();
@@ -168,11 +145,10 @@ public class Scheduler {
                 }
                 // 获取添加执行任务的的任务索引值
                 int index = getIndexByMode();
-                TaskGroup taskGroup = this.taskGroups.get(index);
-                List<Runnable> tasks = taskGroup.getTaskQueue();
-                if (tasks.size() > 0) {
+                TaskGroup taskGroupT = this.taskGroups.get(index);
+                if (taskGroupT.size() > 0) {
                     try {
-                        this.blockingTaskQueue.put(tasks.remove(0));
+                        this.blockingTaskQueue.put(taskGroupT.pollFirst());
                     } catch (InterruptedException e) {
                         log.error("向执行任务队列放入任务异常", e);
                         throw new RuntimeException(e);
@@ -181,7 +157,7 @@ public class Scheduler {
                     this.taskGroups.remove(index);
                 }
             }
-        });
+        }).start();
     }
 
     /**
