@@ -1,10 +1,12 @@
 package fun.gatsby.commons.schedule;
 
 
+import cn.hutool.core.lang.func.Func0;
 import lombok.Data;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author dinghao
@@ -32,11 +34,14 @@ public class TaskGroup {
     private String name;
     /**
      * 任务组模式
+     * 1,出现失败任务后直接中断后续任务，并执行补偿函数。包括已在队列中的任务
+     * 2,出现失败后，跳过继续。
      */
-    private int mode;
+    private int mod = 1;
+    private Func0 callback;
 
     public TaskGroup() {
-        int code = hashCode();
+        int code = UUID.randomUUID().hashCode();
         this.id = code < 0 ? -code : code;
         this.name = "task group - " + id;
     }
@@ -61,7 +66,22 @@ public class TaskGroup {
     }
 
     public synchronized int onTaskException(Runnable task) {
-        return 1;
+        if (mod == 1) {
+            int size = taskQueue.size();
+            taskQueue.clear();
+            return size == 0 ? 1 : size;
+        } else {
+            return 1;
+        }
+    }
+
+    public void callback() {
+        System.out.println("group:" + name + " callback");
+        callback.callWithRuntimeException();
+    }
+
+    public void setCallback(Func0 func) {
+        this.callback = func;
     }
 }
 

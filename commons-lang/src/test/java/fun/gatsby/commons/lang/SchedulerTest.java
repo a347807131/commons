@@ -45,6 +45,12 @@ class MyPlan implements Runnable {
     @Override
     public void run() {
         System.out.println(Thread.currentThread().getName() + ":" + name);
+
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         throw new RuntimeException("error");
 
     }

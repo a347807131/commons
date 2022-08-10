@@ -4,7 +4,9 @@ package fun.gatsby.commons.schedule;
 import cn.hutool.core.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,6 +59,9 @@ public class Scheduler {
      */
     private volatile boolean status = false;
 
+
+    Map<Runnable, TaskGroup> taskGroupMap;
+
     /**
      * 构造器
      *
@@ -73,10 +78,19 @@ public class Scheduler {
         this.mode = mode;
         this.blockingTaskQueue = new LinkedBlockingQueue<>(queueSize);
         this.taskGroups.forEach(taskGroup -> this.count.addAndGet(taskGroup.getTaskQueue().size()));
+
+        this.taskGroupMap = new HashMap<>(this.count.get());
+
+        this.taskGroups.forEach(taskGroup -> {
+            taskGroup.getTaskQueue().forEach(task -> {
+                taskGroupMap.put(task, taskGroup);
+            });
+        });
+
     }
 
     public Scheduler(int nThrends, int mode, List<TaskGroup> taskGroups) {
-        this(nThrends, 2 << 8, mode, taskGroups);
+        this(nThrends, 2 << 7, mode, taskGroups);
     }
 
     public Scheduler(int nThrends, List<TaskGroup> taskGroups) {
@@ -135,31 +149,34 @@ public class Scheduler {
                     return;
                 }
             }
+            // 获取一个执行任务
+            Runnable task;
             try {
-                // 获取一个执行任务
-                Runnable task = this.blockingTaskQueue.take();
-                this.loopExecutor.execute(() -> {
-                    //TODO 根据task获取任务组
-                    TaskGroup taskGroup = taskGroups.get(0);
-                    int sizeToDecrease = 1;
-                    try {
-                        task.run();
-                        if (taskGroup.getTaskQueue().size() == 0) {
-                            //TODO 还得拍段队列中是否还存在该任务组的任务，如果不存在，则可以调用taskGroups的成功回调函数
-//                            if(blockingTaskQueue)
-                        }
-                    } catch (Exception e) {
-                        log.error("执行任务出错！", e);
-                        sizeToDecrease = taskGroup.onTaskException(task);
-                    } finally {
-                        // 当任务执行完毕，将任务数减1˛
-                        this.count.addAndGet(-sizeToDecrease);
-                    }
-                });
-                // 执行任务
+                task = this.blockingTaskQueue.take();
             } catch (InterruptedException e) {
-                log.error("任务执行中发生异常", e);
+                throw new RuntimeException(e);
             }
+
+            final Runnable finalTask = task;
+            this.loopExecutor.execute(() -> {
+                //TODO 根据task获取任务组
+                TaskGroup taskGroup = taskGroupMap.get(finalTask);
+                int sizeToDecrease = 1;
+                try {
+                    finalTask.run();
+//                        if (taskGroup.getTaskQueue().size() == 0) {
+////                            //TODO 还得拍段队列中是否还存在该任务组的任务，如果不存在，则可以调用taskGroups的成功回调函数
+//                            if(!blockingTaskQueue.contains(task))
+//                                taskGroup.callback();
+//                        }
+                } catch (Exception e) {
+                    log.error("执行任务出错！", e);
+                    sizeToDecrease = taskGroup.onTaskException(finalTask);
+                } finally {
+                    // 当任务执行完毕，将任务数减1˛
+                    this.count.addAndGet(-sizeToDecrease);
+                }
+            });
         }
     }
 
