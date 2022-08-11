@@ -5,7 +5,7 @@ import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 
-import java.util.List;
+import java.util.LinkedList;
 import java.util.stream.IntStream;
 
 /**
@@ -16,19 +16,17 @@ public class SchedulerTest extends TestCase {
         int userSize = 10;
         int jobSize = 100;
 
-        TaskGroup[] taskGroupTS = new TaskGroup[userSize];
-
+        LinkedList<Runnable> tasks = new LinkedList<>();
         IntStream.range(0, userSize).parallel().forEach(i -> {
-            TaskGroup taskGroupT = new TaskGroup();
-            taskGroupTS[i] = taskGroupT;
+            TaskGroup taskGroup = new TaskGroup();
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
-                taskGroupT.append(myPlan);
+                taskGroup.add(myPlan);
             }
+            tasks.addAll(taskGroup.getTaskQueue());
         });
-
-        Scheduler scheder = new Scheduler(4, 1, List.of(taskGroupTS));
+        Scheduler scheder = new Scheduler(4, 1, tasks);
         scheder.run();
 
     }

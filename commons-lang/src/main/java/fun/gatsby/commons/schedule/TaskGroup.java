@@ -22,10 +22,10 @@ public class TaskGroup {
     private int id;
 
     /**
-     * 执行计划队列
+     * 增强任务队列
      */
 
-    private final LinkedList<Runnable> taskQueue = new LinkedList<>();
+    private final List<Runnable> taskQueue = new LinkedList<>();
     /**
      * 任务组名称
      */
@@ -64,25 +64,20 @@ public class TaskGroup {
         return new TaskGroup(List.of(tasks));
     }
 
-    public boolean append(Runnable task) {
-        RunnableaskWrapper Wrapperedtask = this.new RunnableaskWrapper(task);
+    public boolean add(Runnable task) {
+        var taskWrapper = this.new WrapperedTask(task);
         this.countRunnableoFinish.addAndGet(1);
-        return taskQueue.add(Wrapperedtask);
+        return taskQueue.add(taskWrapper);
     }
 
-    private void addAll(Collection<Runnable> tasks) {
+    protected void addAll(Collection<Runnable> tasks) {
         for (Runnable task : tasks) {
-            append(this.new RunnableaskWrapper(task));
+            add(this.new WrapperedTask(task));
         }
-        this.countRunnableoFinish.addAndGet(tasks.size());
     }
 
-    public Runnable pollFirst() {
-        return taskQueue.pollFirst();
-    }
-
-    public int size() {
-        return this.taskQueue.size();
+    public List<Runnable> getTaskQueue() {
+        return new LinkedList<>(taskQueue);
     }
 
     protected void onAllDone() {
@@ -90,12 +85,23 @@ public class TaskGroup {
 
     }
 
+    protected int onTaskException() {
+        if (mod == 1) {
+            cancelled = true;
+            int size = taskQueue.size();
+            taskQueue.clear();
+            return size == 0 ? 1 : size;
+        } else {
+            return 1;
+        }
+    }
+
     //静态代理
-    protected class RunnableaskWrapper implements Runnable {
+    protected class WrapperedTask implements Runnable {
 
         private final Runnable taskIn;
 
-        protected RunnableaskWrapper(Runnable runnable) {
+        protected WrapperedTask(Runnable runnable) {
             this.taskIn = runnable;
         }
 
@@ -116,17 +122,6 @@ public class TaskGroup {
                 if (getCountRunnableoFinish().get() == 0) {
                     onAllDone();
                 }
-            }
-        }
-
-        protected int onTaskException() {
-            if (mod == 1) {
-                cancelled = true;
-                int size = taskQueue.size();
-                taskQueue.clear();
-                return size == 0 ? 1 : size;
-            } else {
-                return 1;
             }
         }
     }
