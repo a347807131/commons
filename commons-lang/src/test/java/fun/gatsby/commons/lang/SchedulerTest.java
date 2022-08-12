@@ -13,21 +13,24 @@ import java.util.stream.IntStream;
  */
 public class SchedulerTest extends TestCase {
     public void test() {
-        int userSize = 10;
-        int jobSize = 100;
+        for (int a = 0; a < 10; a++) {
 
-        LinkedList<Runnable> tasks = new LinkedList<>();
-        IntStream.range(0, userSize).parallel().forEach(i -> {
-            TaskGroup taskGroup = new TaskGroup();
-            for (int j = 0; j < jobSize; j++) {
-                MyPlan myPlan = new MyPlan();
-                myPlan.setName("用户" + i + ",执行计划" + j);
-                taskGroup.add(myPlan);
-            }
-            tasks.addAll(taskGroup.getTaskQueue());
-        });
-        Scheduler scheder = new Scheduler(4, tasks);
-        scheder.run();
+            int userSize = 10;
+            int jobSize = 100;
+
+            LinkedList<Runnable> tasks = new LinkedList<>();
+            IntStream.range(0, userSize).forEach(i -> {
+                TaskGroup taskGroup = new TaskGroup();
+                for (int j = 0; j < jobSize; j++) {
+                    MyPlan myPlan = new MyPlan();
+                    myPlan.setName("用户" + i + ",执行计划" + j);
+                    taskGroup.add(myPlan);
+                }
+                tasks.addAll(taskGroup.getTaskQueue());
+            });
+            Scheduler scheder = new Scheduler(4, tasks);
+            scheder.run();
+        }
     }
 }
 

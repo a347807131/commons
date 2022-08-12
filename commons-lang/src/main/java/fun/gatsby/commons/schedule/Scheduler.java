@@ -114,7 +114,10 @@ public class Scheduler {
             }
             // 获取一个执行任务,并执行
             try {
-                if (blockingTaskQueue.isEmpty()) return;
+                if (blockingTaskQueue.isEmpty()) {
+                    Thread.yield();
+                    continue;
+                }
                 var task = this.blockingTaskQueue.take();
                 this.loopExecutor.execute(task);
             } catch (InterruptedException e) {
