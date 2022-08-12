@@ -26,9 +26,8 @@ public class SchedulerTest extends TestCase {
             }
             tasks.addAll(taskGroup.getTaskQueue());
         });
-        Scheduler scheder = new Scheduler(4, 1, tasks);
+        Scheduler scheder = new Scheduler(4, tasks);
         scheder.run();
-
     }
 }
 
@@ -47,7 +46,7 @@ class MyPlan implements Runnable {
             throw new RuntimeException(e);
         }
         if (name.startsWith("用户9")) {
-            throw new RuntimeException("error");
+//            throw new RuntimeException("error");
         }
 
     }

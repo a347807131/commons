@@ -3,8 +3,9 @@ package fun.gatsby.commons.schedule;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,8 +35,7 @@ public class Scheduler {
     /**
      * 还在队列外等待执行的任务
      */
-    private final List<Runnable> tasks;
-
+    private final LinkedList<Runnable> tasks;
 
     /**
      * 队列的容量
@@ -49,34 +49,32 @@ public class Scheduler {
      *
      * @param nThrends  同时执行任务中的任务线程数
      * @param queueSize 任务执行队列
-     * @param mode      执行模式 1：所有任务信息都执行 2：先执行部分任务，执行完后再执行其他任务
      */
-    public Scheduler(int nThrends, int queueSize, int mode, List<Runnable> tasks) {
-        this.tasks = new CopyOnWriteArrayList<>(tasks);
+    public Scheduler(int nThrends, int queueSize, List<Runnable> tasks) {
+        this.tasks = new LinkedList<>(tasks);
         this.nThrends = nThrends;
         this.queueSize = queueSize;
         this.loopExecutor = Executors.newFixedThreadPool(this.nThrends);
         this.blockingTaskQueue = new LinkedBlockingQueue<>(queueSize);
     }
 
-    public Scheduler(int nThrends, int mode, List<Runnable> tasks) {
-        this(nThrends, 2 << 7, mode, tasks);
-    }
-
     public Scheduler(int nThrends, List<Runnable> tasks) {
-        this(nThrends, 1, tasks);
+        this(nThrends, 2 << 7, tasks);
     }
 
-    public Scheduler(int nThrends, Runnable... runnables) {
-        this(nThrends, 1, List.of(runnables));
+    public Scheduler(int nThrends, Runnable... tasks) {
+        this(nThrends, 1, new LinkedList<>(Arrays.asList(tasks)));
     }
 
     public int getnThrends() {
         return nThrends;
     }
 
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
+    /**
+     * 立即取消所有任务
+     */
+    public void cancel() {
+        this.cancelled = true;
     }
 
     /**
@@ -87,7 +85,7 @@ public class Scheduler {
         putTaskToQueueAsync();
         takeAndExecuteSync();
 
-        //停止线程池,在队列中的任务全部执行完毕后，才会停止线程池，该方法不会阻塞f
+        //停止线程池,在队列中的任务全部执行完毕后，才会停止线程池，该方法不会阻塞
         if (!cancelled)
             loopExecutor.shutdown();
         else
@@ -109,13 +107,14 @@ public class Scheduler {
     private void takeAndExecuteSync() {
         while (!cancelled) {
             // 所有执行任务都放入队列后，退出
-            if (this.tasks.size() == 0) {
-                if (this.blockingTaskQueue.size() == 0) {
+            if (this.tasks.isEmpty()) {
+                if (this.blockingTaskQueue.isEmpty()) {
                     return;
                 }
             }
             // 获取一个执行任务,并执行
             try {
+                if (blockingTaskQueue.isEmpty()) return;
                 var task = this.blockingTaskQueue.take();
                 this.loopExecutor.execute(task);
             } catch (InterruptedException e) {
@@ -130,15 +129,13 @@ public class Scheduler {
     private void putTaskToQueueAsync() {
         new Thread(() -> {
             while (!cancelled) {
-                // 任务信息数组数量
-                int length = this.tasks.size();
-                // 执行完结束线程
-                if (length == 0) {
-                    return;
-                }
                 // 获取添加执行任务的的任务索引值
                 try {
-                    this.blockingTaskQueue.put(tasks.remove(0));
+                    Runnable task = tasks.poll();
+                    if (task == null) {
+                        return;
+                    }
+                    this.blockingTaskQueue.put(task);
                 } catch (InterruptedException e) {
                     log.error("向执行任务队列放入任务异常", e);
                     throw new RuntimeException(e);
