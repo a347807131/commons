@@ -5,7 +5,7 @@ import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 
-import java.util.List;
+import java.util.LinkedList;
 import java.util.stream.IntStream;
 
 /**
@@ -13,24 +13,24 @@ import java.util.stream.IntStream;
  */
 public class SchedulerTest extends TestCase {
     public void test() {
-        int userSize = 10;
-        int jobSize = 100;
+        for (int a = 0; a < 10; a++) {
 
-        TaskGroup[] taskGroupTS = new TaskGroup[userSize];
+            int userSize = 10;
+            int jobSize = 100;
 
-        IntStream.range(0, userSize).parallel().forEach(i -> {
-            TaskGroup taskGroupT = new TaskGroup();
-            taskGroupTS[i] = taskGroupT;
-            for (int j = 0; j < jobSize; j++) {
-                MyPlan myPlan = new MyPlan();
-                myPlan.setName("用户" + i + ",执行计划" + j);
-                taskGroupT.append(myPlan);
-            }
-        });
-
-        Scheduler scheder = new Scheduler(4, 1, List.of(taskGroupTS));
-        scheder.run();
-
+            LinkedList<Runnable> tasks = new LinkedList<>();
+            IntStream.range(0, userSize).forEach(i -> {
+                TaskGroup taskGroup = new TaskGroup();
+                for (int j = 0; j < jobSize; j++) {
+                    MyPlan myPlan = new MyPlan();
+                    myPlan.setName("用户" + i + ",执行计划" + j);
+                    taskGroup.add(myPlan);
+                }
+                tasks.addAll(taskGroup.getTaskQueue());
+            });
+            Scheduler scheder = new Scheduler(4, tasks);
+            scheder.run();
+        }
     }
 }
 
@@ -49,7 +49,7 @@ class MyPlan implements Runnable {
             throw new RuntimeException(e);
         }
         if (name.startsWith("用户9")) {
-            throw new RuntimeException("error");
+//            throw new RuntimeException("error");
         }
 
     }

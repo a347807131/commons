@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Data
 @Slf4j
+//现在已经实现组任务完成后或异常时可以有同步回调函数
+//TODO 如何实现任务开始前也可以有同步回调函数
 public class TaskGroup {
 
     /**
@@ -22,10 +24,10 @@ public class TaskGroup {
     private int id;
 
     /**
-     * 执行计划队列
+     * 增强任务队列
      */
 
-    private final LinkedList<Runnable> taskQueue = new LinkedList<>();
+    private final List<WrapperedTask> taskQueue = new LinkedList<>();
     /**
      * 任务组名称
      */
@@ -39,7 +41,10 @@ public class TaskGroup {
 
     boolean cancelled = false;
 
-    AtomicInteger countRunnableoFinish = new AtomicInteger(0);
+    /**
+     * 剩余未完成的任务的数量
+     */
+    AtomicInteger taskCountAwatingToFinish = new AtomicInteger(0);
 
     public TaskGroup() {
         int code = UUID.randomUUID().hashCode();
@@ -51,82 +56,76 @@ public class TaskGroup {
         this.id = id;
         this.name = name;
         this.addAll(taskQueue);
-        this.countRunnableoFinish.addAndGet(taskQueue.size());
+        this.taskCountAwatingToFinish.addAndGet(taskQueue.size());
     }
 
     public TaskGroup(List<Runnable> taskQueue) {
         this();
         this.addAll(taskQueue);
-        this.countRunnableoFinish.addAndGet(taskQueue.size());
+        this.taskCountAwatingToFinish.addAndGet(taskQueue.size());
     }
 
     public static TaskGroup of(Runnable... tasks) {
         return new TaskGroup(List.of(tasks));
     }
 
-    public boolean append(Runnable task) {
-        RunnableaskWrapper Wrapperedtask = this.new RunnableaskWrapper(task);
-        this.countRunnableoFinish.addAndGet(1);
-        return taskQueue.add(Wrapperedtask);
+    public boolean add(Runnable task) {
+        var taskWrapper = this.new WrapperedTask(task);
+        this.taskCountAwatingToFinish.addAndGet(1);
+        return taskQueue.add(taskWrapper);
     }
 
-    private void addAll(Collection<Runnable> tasks) {
+    protected void addAll(Collection<Runnable> tasks) {
         for (Runnable task : tasks) {
-            append(this.new RunnableaskWrapper(task));
+            add(this.new WrapperedTask(task));
         }
-        this.countRunnableoFinish.addAndGet(tasks.size());
     }
 
-    public Runnable pollFirst() {
-        return taskQueue.pollFirst();
+    public List<Runnable> getTaskQueue() {
+        return new LinkedList<>(taskQueue);
     }
 
-    public int size() {
-        return this.taskQueue.size();
-    }
-
+    /**
+     * 全部任务执行完后的回调函数，只会有一个线程进入
+     */
     protected void onAllDone() {
         System.out.println("group:" + name + " all done");
+    }
 
+    /**
+     * 任务组中子任务出现异常时的回调函数，可能会有多个线程进入
+     */
+    protected void onTaskException() {
     }
 
     //静态代理
-    protected class RunnableaskWrapper implements Runnable {
+    protected class WrapperedTask implements Runnable {
 
         private final Runnable taskIn;
 
-        protected RunnableaskWrapper(Runnable runnable) {
+        protected WrapperedTask(Runnable runnable) {
             this.taskIn = runnable;
         }
 
+        //FIXME
         @Override
         public void run() {
-            int sizeRunnableoDecrease = 1;
+            int numToDecrease = 1;
             try {
+                //对于已在运行中或队列中的任务直接跳过
                 if (cancelled) {
                     return;
                 }
                 taskIn.run();
             } catch (Exception e) {
-                log.error("执行任务出错！{}", id, e);
-                sizeRunnableoDecrease = onTaskException();
+                log.error("执行group:{}中的任务出错！{}", id, e);
+                onTaskException();
             } finally {
                 // 当任务执行完毕，将任务数减1
-                countRunnableoFinish.addAndGet(-sizeRunnableoDecrease);
-                if (getCountRunnableoFinish().get() == 0) {
+                taskCountAwatingToFinish.addAndGet(-numToDecrease);
+                if (taskCountAwatingToFinish.get() == 0) {
                     onAllDone();
                 }
-            }
-        }
-
-        protected int onTaskException() {
-            if (mod == 1) {
-                cancelled = true;
-                int size = taskQueue.size();
-                taskQueue.clear();
-                return size == 0 ? 1 : size;
-            } else {
-                return 1;
             }
         }
     }
