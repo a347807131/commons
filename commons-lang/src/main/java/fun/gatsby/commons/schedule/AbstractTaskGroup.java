@@ -91,9 +91,7 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
      * @param task 源任务
      * @return 包装类实例
      */
-    private Runnable wrapTask(Runnable task) {
-        return new TaskProxy(task, this);
-    }
+    protected abstract Runnable wrapTask(Runnable task);
 
     /**
      * 立即停止所有任务，剩余任务将不会执行原逻辑。
@@ -102,22 +100,26 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
         cancelled = true;
     }
 
-    /**
-     * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
-     */
-    protected void afterAllDone() {
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public AtomicInteger getTaskCountAwaitingToFinish() {
+        return taskCountAwaitingToFinish;
     }
 
     /**
-     * 任务组中子任务出现异常时的回调函数，存在会有多个线程进入的情况
+     * 0 处理中
+     * -1 已取消剩余任务的执行
+     * 1 全部任务执行完成
+     *
+     * @return 状态
      */
-    protected void onTaskException(Exception e) {
-    }
+    public int isDone() {
+        int count = taskCountAwaitingToFinish.get();
+        if (cancelled) return -1;
+        if (count >= 1) return 1;
+        else return 0;
 
-    /**
-     * 当任务组第一个的第一个任务开始执行时的函数，该函数执行完后其他任务才会开始执行<br/>
-     * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
-     */
-    protected synchronized void beforeFirstStart() {
     }
 }
