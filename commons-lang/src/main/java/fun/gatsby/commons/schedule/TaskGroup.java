@@ -7,7 +7,20 @@ import lombok.extern.slf4j.Slf4j;
  * @author gatsby
  */
 @Slf4j
-public class TaskGroup extends AbstractTaskGroup implements ITaskGroup {
+public class TaskGroup extends AbstractTaskGroup {
+
+    protected volatile boolean cancelled = false;
+
+    /**
+     * 立即停止所有任务，剩余任务将不会执行原逻辑。
+     */
+    public void cancel() {
+        cancelled = true;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
 
     /**
      * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
@@ -33,6 +46,36 @@ public class TaskGroup extends AbstractTaskGroup implements ITaskGroup {
 
     @Override
     protected Runnable wrapTask(Runnable task) {
-        return new TaskProxy(task, this);
+        return new TaskProxy(task);
+    }
+
+    //静态代理
+    class TaskProxy implements Runnable {
+
+        final Runnable task;
+
+        protected TaskProxy(Runnable task) {
+            this.task = task;
+        }
+
+        @Override
+        public void run() {
+            if (cancelled) {
+                return;
+            }
+            int count = taskCountAwaitingToFinish.decrementAndGet();
+            if (count + 1 == size()) {
+                beforeFirstStart();
+            }
+            try {
+                task.run();
+            } catch (Exception e) {
+                onTaskException(e);
+            } finally {
+                if (count == 0 && !cancelled) {
+                    afterAllDone();
+                }
+            }
+        }
     }
 }

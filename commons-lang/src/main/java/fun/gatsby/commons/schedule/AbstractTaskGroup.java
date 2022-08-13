@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
 
-    protected volatile boolean cancelled = false;
     /**
      * 剩余未完成的任务的数量
      */
@@ -91,35 +90,7 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
      * @param task 源任务
      * @return 包装类实例
      */
-    protected abstract Runnable wrapTask(Runnable task);
-
-    /**
-     * 立即停止所有任务，剩余任务将不会执行原逻辑。
-     */
-    public void cancel() {
-        cancelled = true;
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    public AtomicInteger getTaskCountAwaitingToFinish() {
-        return taskCountAwaitingToFinish;
-    }
-
-    /**
-     * 0 处理中
-     * -1 已取消剩余任务的执行
-     * 1 全部任务执行完成
-     *
-     * @return 状态
-     */
-    public int isDone() {
-        int count = taskCountAwaitingToFinish.get();
-        if (cancelled) return -1;
-        if (count >= 1) return 1;
-        else return 0;
-
+    protected Runnable wrapTask(Runnable task) {
+        return task;
     }
 }
