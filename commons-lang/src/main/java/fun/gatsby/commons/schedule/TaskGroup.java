@@ -22,12 +22,7 @@ public class TaskGroup extends AbstractTaskGroup {
         return cancelled;
     }
 
-    /**
-     * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
-     */
-    public void afterAllDone() {
-        log.info("afterAllDone");
-    }
+    long startTime;
 
     /**
      * 任务组中子任务出现异常时的回调函数，存在会有多个线程进入的情况
@@ -37,16 +32,25 @@ public class TaskGroup extends AbstractTaskGroup {
     }
 
     /**
-     * 当任务组第一个的第一个任务开始执行时的函数，该函数执行完后其他任务才会开始执行<br/>
-     * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
+     * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
      */
-    public synchronized void beforeFirstStart() {
-        log.info("beforeFirstStart");
+    public void afterAllDone() {
+        log.info("afterAllDone,cust {}", System.currentTimeMillis() - startTime);
     }
 
     @Override
     protected Runnable wrapTask(Runnable task) {
         return new TaskProxy(task);
+    }
+
+    /**
+     * //FIXME 可能会有问题，因为不能保证方法结束前没有其他任务开始执行
+     * 当任务组第一个的第一个任务开始执行时的函数，该函数执行完后其他任务才会开始执行<br/>
+     * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
+     */
+    public synchronized void beforeFirstStart() throws InterruptedException {
+        log.info("beforeFirstStart");
+        startTime = System.currentTimeMillis();
     }
 
     //静态代理
@@ -64,10 +68,11 @@ public class TaskGroup extends AbstractTaskGroup {
                 return;
             }
             int count = taskCountAwaitingToFinish.decrementAndGet();
-            if (count + 1 == size()) {
-                beforeFirstStart();
-            }
             try {
+                if (count + 1 == size()) {
+                    //FIXME 可能会有问题，因为不能保证方法结束前没有其他任务开始执行
+                    beforeFirstStart();
+                }
                 task.run();
             } catch (Exception e) {
                 onTaskException(e);
