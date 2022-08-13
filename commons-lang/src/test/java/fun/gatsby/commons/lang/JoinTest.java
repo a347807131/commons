@@ -1,9 +1,10 @@
 package fun.gatsby.commons.lang;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
- * in方法是Thread类中的一个方法，该方法的定义是等待该线程执行直到终止。
+ * join方法是Thread类中的一个方法，该方法的定义是等待该线程执行直到终止。
  * 其实就说join方法将挂起调用线程的执行，直到被调用的对象完成它的执行。
  */
 public class JoinTest extends TestCase {
@@ -49,6 +50,49 @@ public class JoinTest extends TestCase {
         t1.start();
         t2.start();
         t3.start();
+    }
+
+    @Test
+    public void test2() throws InterruptedException {
+        Thread thread1 = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("thread 1");
+            }
+        });
+        Thread thread2 = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("thread 2");
+            }
+        });
+        Thread thread3 = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("thread 3");
+            }
+        });
+
+        thread1.start();
+        thread1.join();
+        thread2.start();
+        thread2.join();
+        thread3.start();
+        thread3.join();
+
+        System.out.println("thread Main");
     }
 
 }

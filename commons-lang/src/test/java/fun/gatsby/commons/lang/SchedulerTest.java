@@ -31,8 +31,7 @@ public class SchedulerTest extends TestCase {
 
     public void testScheduler() {
         List<Runnable> tasks = genTasks();
-        Scheduler scheder = new Scheduler(4, tasks);
-        scheder.run();
+        Scheduler.scheduleNow(4, tasks);
     }
 
     public void testParallelStream() {
@@ -74,7 +73,7 @@ class MyPlan implements Runnable {
             throw new RuntimeException(e);
         }
         if (name.startsWith("用户9")) {
-//            throw new RuntimeException("error");
+            throw new RuntimeException("error");
         }
 
     }

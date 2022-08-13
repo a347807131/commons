@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
 
-    protected volatile boolean cancelled = false;
     /**
      * 剩余未完成的任务的数量
      */
@@ -91,33 +90,7 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
      * @param task 源任务
      * @return 包装类实例
      */
-    private Runnable wrapTask(Runnable task) {
-        return new TaskProxy(task, this);
-    }
-
-    /**
-     * 立即停止所有任务，剩余任务将不会执行原逻辑。
-     */
-    public void cancel() {
-        cancelled = true;
-    }
-
-    /**
-     * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
-     */
-    protected void afterAllDone() {
-    }
-
-    /**
-     * 任务组中子任务出现异常时的回调函数，存在会有多个线程进入的情况
-     */
-    protected void onTaskException(Exception e) {
-    }
-
-    /**
-     * 当任务组第一个的第一个任务开始执行时的函数，该函数执行完后其他任务才会开始执行<br/>
-     * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
-     */
-    protected synchronized void beforeFirstStart() {
+    protected Runnable wrapTask(Runnable task) {
+        return task;
     }
 }
