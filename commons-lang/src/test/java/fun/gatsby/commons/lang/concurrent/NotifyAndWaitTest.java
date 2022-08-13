@@ -1,4 +1,4 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.lang.concurrent;
 
 public class NotifyAndWaitTest {
     public static void main(String[] args) {
