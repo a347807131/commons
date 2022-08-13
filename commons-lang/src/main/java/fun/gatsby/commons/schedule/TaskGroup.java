@@ -1,17 +1,34 @@
 package fun.gatsby.commons.schedule;
 
-import lombok.extern.slf4j.Slf4j;
-
+import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
  * @author gatsby
  */
-@Slf4j
 public class TaskGroup extends AbstractTaskGroup {
 
+    final ReentrantLock firstStartLock = new ReentrantLock();
+
     protected volatile boolean cancelled = false;
+
+    int id;
+
+    String name;
+
+    public TaskGroup() {
+        int code = UUID.randomUUID().hashCode();
+        this.id = code < 0 ? -code : code;
+        this.name = "task-group-" + id;
+    }
+
+    public TaskGroup(int id, String name, Collection<? extends Runnable> tasks) {
+        super(tasks);
+        this.id = id;
+        this.name = name;
+    }
 
     /**
      * 立即停止所有任务，剩余任务将不会执行原逻辑。
@@ -24,17 +41,6 @@ public class TaskGroup extends AbstractTaskGroup {
         return cancelled;
     }
 
-    long startTime;
-
-    /**
-     * 任务组中子任务出现异常时的回调函数，存在会有多个线程进入的情况
-     */
-    public void onTaskException(Exception e) {
-        log.info("onTaskException", e);
-    }
-
-    ReentrantLock firstStartLock = new ReentrantLock();
-
     @Override
     protected Runnable wrapTask(Runnable task) {
         return new TaskProxy(task);
@@ -44,7 +50,6 @@ public class TaskGroup extends AbstractTaskGroup {
      * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
      */
     public void afterAllDone() {
-        log.info("{} AllDone,cost {}", id, System.currentTimeMillis() - startTime);
     }
 
     /**
@@ -52,8 +57,13 @@ public class TaskGroup extends AbstractTaskGroup {
      * 当任务组第一个的第一个任务开始执行时的函数，该函数执行完后其他任务才会开始执行<br/>
      * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
      */
-    public synchronized void beforeFirstStart() throws InterruptedException {
-        startTime = System.currentTimeMillis();
+    public synchronized void beforeFirstStart() {
+    }
+
+    /**
+     * 任务组中子任务出现异常时的回调函数，存在会有多个线程进入的情况
+     */
+    public void onTaskException(Exception e) {
     }
 
     //静态代理
@@ -71,13 +81,11 @@ public class TaskGroup extends AbstractTaskGroup {
             if (cancelled) {
                 return;
             }
+            lock.lock();
             int count = taskCountAwaitingToFinish.decrementAndGet();
             try {
-                lock.lock();
                 if (count + 1 == size()) {
-                    log.info(id + "first Started");
                     beforeFirstStart();
-                    log.info(id + "first ended");
                 }
                 lock.unlock();
                 task.run();

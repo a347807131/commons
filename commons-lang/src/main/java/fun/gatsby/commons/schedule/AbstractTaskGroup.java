@@ -2,8 +2,6 @@ package fun.gatsby.commons.schedule;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
@@ -12,36 +10,13 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
      * 剩余未完成的任务的数量
      */
     protected AtomicInteger taskCountAwaitingToFinish = new AtomicInteger(0);
-    /**
-     * 唯一标识
-     */
-    int id;
-    /**
-     * 任务组名称
-     */
-    String name;
 
     public AbstractTaskGroup() {
-        int code = UUID.randomUUID().hashCode();
-        this.id = code < 0 ? -code : code;
-        this.name = "task-group-" + id;
     }
 
-    public AbstractTaskGroup(int id, String name, List<Runnable> taskQueue) {
-        this.id = id;
-        this.name = name;
+    public AbstractTaskGroup(Collection<? extends Runnable> taskQueue) {
         this.addAll(taskQueue);
         this.taskCountAwaitingToFinish.addAndGet(taskQueue.size());
-    }
-
-    public AbstractTaskGroup(List<Runnable> taskQueue) {
-        this();
-        this.addAll(taskQueue);
-        this.taskCountAwaitingToFinish.addAndGet(taskQueue.size());
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override
