@@ -2,6 +2,8 @@ package fun.gatsby.commons.schedule;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 
 /**
  * @author gatsby
@@ -31,12 +33,7 @@ public class TaskGroup extends AbstractTaskGroup {
         log.info("onTaskException", e);
     }
 
-    /**
-     * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
-     */
-    public void afterAllDone() {
-        log.info("afterAllDone,cust {}", System.currentTimeMillis() - startTime);
-    }
+    ReentrantLock firstStartLock = new ReentrantLock();
 
     @Override
     protected Runnable wrapTask(Runnable task) {
@@ -44,12 +41,18 @@ public class TaskGroup extends AbstractTaskGroup {
     }
 
     /**
-     * //FIXME 可能会有问题，因为不能保证方法结束前没有其他任务开始执行
+     * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
+     */
+    public void afterAllDone() {
+        log.info("{} AllDone,cost {}", id, System.currentTimeMillis() - startTime);
+    }
+
+    /**
+     * //FIXED 可能的问题，因为不能保证方法结束前没有其他任务开始执行
      * 当任务组第一个的第一个任务开始执行时的函数，该函数执行完后其他任务才会开始执行<br/>
      * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
      */
     public synchronized void beforeFirstStart() throws InterruptedException {
-        log.info("beforeFirstStart");
         startTime = System.currentTimeMillis();
     }
 
@@ -64,19 +67,25 @@ public class TaskGroup extends AbstractTaskGroup {
 
         @Override
         public void run() {
+            final ReentrantLock lock = firstStartLock;
             if (cancelled) {
                 return;
             }
             int count = taskCountAwaitingToFinish.decrementAndGet();
             try {
+                lock.lock();
                 if (count + 1 == size()) {
-                    //FIXME 可能会有问题，因为不能保证方法结束前没有其他任务开始执行
+                    log.info(id + "first Started");
                     beforeFirstStart();
+                    log.info(id + "first ended");
                 }
+                lock.unlock();
                 task.run();
             } catch (Exception e) {
                 onTaskException(e);
             } finally {
+                if (lock.isHeldByCurrentThread())
+                    lock.unlock();
                 if (count == 0 && !cancelled) {
                     afterAllDone();
                 }
