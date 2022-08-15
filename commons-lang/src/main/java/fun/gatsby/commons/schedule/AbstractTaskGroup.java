@@ -32,6 +32,7 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
         for (Runnable task : tasks) {
             list.add(this.wrapTask(task));
         }
+        this.taskCountAwaitingToFinish.addAndGet(list.size());
         return super.addAll(list);
     }
 

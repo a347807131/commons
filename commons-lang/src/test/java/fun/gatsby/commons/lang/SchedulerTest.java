@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 /**
  * @Date: 2022/3/9 14:52
  */
+@Slf4j
 public class SchedulerTest extends TestCase {
     public void testExecutor() {
 
@@ -31,7 +32,10 @@ public class SchedulerTest extends TestCase {
 
     public void testScheduler() {
         List<Runnable> tasks = genTasks();
-        Scheduler.scheduleNow(4, tasks);
+        Scheduler scheduler = Scheduler.schedule(4, tasks);
+        scheduler.start();
+        scheduler.await();
+
     }
 
     public void testParallelStream() {
@@ -43,7 +47,7 @@ public class SchedulerTest extends TestCase {
         int userSize = 10;
         int jobSize = 100;
 
-        LinkedList<Runnable> tasks = new LinkedList<>();
+        var taskGroupOfAll = new LinkedList<Runnable>();
         IntStream.range(0, userSize).forEach(i -> {
             TaskGroup taskGroup = new TaskGroup();
             for (int j = 0; j < jobSize; j++) {
@@ -51,9 +55,9 @@ public class SchedulerTest extends TestCase {
                 myPlan.setName("用户" + i + ",执行计划" + j);
                 taskGroup.add(myPlan);
             }
-            tasks.addAll(taskGroup);
+            taskGroupOfAll.addAll(taskGroup);
         });
-        return tasks;
+        return taskGroupOfAll;
     }
 }
 

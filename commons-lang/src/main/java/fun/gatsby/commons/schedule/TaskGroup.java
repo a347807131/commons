@@ -1,5 +1,7 @@
 package fun.gatsby.commons.schedule;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
@@ -8,15 +10,21 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author gatsby
  */
+@Slf4j
 public class TaskGroup extends AbstractTaskGroup {
 
-    final ReentrantLock firstStartLock = new ReentrantLock();
+    protected final ReentrantLock firstStartLock = new ReentrantLock();
 
     protected volatile boolean cancelled = false;
 
     int id;
 
     String name;
+
+    Runnable taskBeforeFirstStart = null;
+
+    Runnable taskAfterAllDone = null;
+
 
     public TaskGroup() {
         int code = UUID.randomUUID().hashCode();
@@ -30,6 +38,22 @@ public class TaskGroup extends AbstractTaskGroup {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     /**
      * 立即停止所有任务，剩余任务将不会执行原逻辑。
      */
@@ -41,6 +65,14 @@ public class TaskGroup extends AbstractTaskGroup {
         return cancelled;
     }
 
+    public void setTaskBeforeFirstStart(Runnable taskBeforeFirstStart) {
+        this.taskBeforeFirstStart = taskBeforeFirstStart;
+    }
+
+    public void setTaskAfterAllDone(Runnable taskAfterAllDone) {
+        this.taskAfterAllDone = taskAfterAllDone;
+    }
+
     @Override
     protected Runnable wrapTask(Runnable task) {
         return new TaskProxy(task);
@@ -50,6 +82,9 @@ public class TaskGroup extends AbstractTaskGroup {
      * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
      */
     public void afterAllDone() {
+        if (taskAfterAllDone != null) {
+            taskAfterAllDone.run();
+        }
     }
 
     /**
@@ -58,12 +93,15 @@ public class TaskGroup extends AbstractTaskGroup {
      * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
      */
     public synchronized void beforeFirstStart() {
+        if (taskBeforeFirstStart != null) {
+            taskBeforeFirstStart.run();
+        }
     }
 
     /**
      * 任务组中子任务出现异常时的回调函数，存在会有多个线程进入的情况
      */
-    public void onTaskException(Exception e) {
+    public void onTaskException(Runnable task, Exception e) {
     }
 
     //静态代理
@@ -90,7 +128,7 @@ public class TaskGroup extends AbstractTaskGroup {
                 lock.unlock();
                 task.run();
             } catch (Exception e) {
-                onTaskException(e);
+                onTaskException(task, e);
             } finally {
                 if (lock.isHeldByCurrentThread())
                     lock.unlock();
