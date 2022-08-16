@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -12,8 +11,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 public class TaskGroup extends AbstractTaskGroup {
-
-    protected final ReentrantLock firstStartLock = new ReentrantLock();
 
     protected volatile boolean cancelled = false;
 
@@ -115,23 +112,20 @@ public class TaskGroup extends AbstractTaskGroup {
 
         @Override
         public void run() {
-            final ReentrantLock lock = firstStartLock;
             if (cancelled) {
                 return;
             }
-            lock.lock();
             int count = taskCountAwaitingToFinish.decrementAndGet();
             try {
-                if (count + 1 == size()) {
-                    beforeFirstStart();
+                synchronized (TaskGroup.this) {
+                    if (count + 1 == size()) {
+                        beforeFirstStart();
+                    }
                 }
-                lock.unlock();
                 task.run();
             } catch (Exception e) {
                 onTaskException(task, e);
             } finally {
-                if (lock.isHeldByCurrentThread())
-                    lock.unlock();
                 if (count == 0 && !cancelled) {
                     afterAllDone();
                 }

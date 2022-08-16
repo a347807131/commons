@@ -5,11 +5,13 @@ import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
@@ -58,6 +60,11 @@ public class SchedulerTest extends TestCase {
             taskGroupOfAll.addAll(taskGroup);
         });
         return taskGroupOfAll;
+    }
+
+    @Test
+    public void t3() {
+        AtomicInteger count = new AtomicInteger(5);
     }
 }
 
