@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
@@ -22,7 +21,7 @@ public class SchedulerTest extends TestCase {
     public void testExecutor() {
 
         List<Runnable> tasks = genTasks();
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
+        ExecutorService threadPool = Executors.newFixedThreadPool(3);
         tasks.forEach(threadPool::submit);
         threadPool.shutdown();
         boolean terminated;
@@ -34,7 +33,7 @@ public class SchedulerTest extends TestCase {
 
     public void testScheduler() {
         List<Runnable> tasks = genTasks();
-        Scheduler scheduler = Scheduler.schedule(4, tasks);
+        Scheduler scheduler = Scheduler.schedule(3, tasks);
         scheduler.start();
         scheduler.await();
 
@@ -52,6 +51,9 @@ public class SchedulerTest extends TestCase {
         var taskGroupOfAll = new LinkedList<Runnable>();
         IntStream.range(0, userSize).forEach(i -> {
             TaskGroup taskGroup = new TaskGroup();
+            taskGroup.setTaskAfterAllDone(() -> {
+                log.info(taskGroup.getId() + "done");
+            });
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
@@ -64,8 +66,8 @@ public class SchedulerTest extends TestCase {
 
     @Test
     public void t3() {
-        AtomicInteger count = new AtomicInteger(5);
     }
+
 }
 
 /**
