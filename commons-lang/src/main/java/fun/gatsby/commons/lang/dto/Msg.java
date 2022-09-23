@@ -1,5 +1,6 @@
 package fun.gatsby.commons.lang.dto;
 
+import fun.gatsby.commons.lang.IResult;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.io.Serializable;
  * @author Civin
  */
 @Data
-public class Msg<T> implements Serializable {
+public class Msg<T> implements Serializable, IResult {
 
     public static int CODE_OK = 100;
     public static int CODE_NOK = 200;
@@ -24,6 +25,13 @@ public class Msg<T> implements Serializable {
     private String msg;
 
     private Msg() {
+    }
+
+    public static <T> Msg<T> of(String msg, int code) {
+        var dto = new Msg<T>();
+        dto.msg = msg;
+        dto.code = code;
+        return dto;
     }
 
     public static <T> Msg<T> of(String msg, int code, T data) {
