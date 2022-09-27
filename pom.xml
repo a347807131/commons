@@ -16,6 +16,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
     </properties>
+    <repositories>
+        <repository>
+            <id>azure</id>
+            <url>https://pkgs.dev.azure.com/expressed/PJ/_packaging/public/maven/v1</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>

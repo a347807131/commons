@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class BeanComparetor {
+public class BeanComparator {
 
     public static boolean compare(Object o1, Object o2) {
         return compare(o1, o2, Collections.emptySet());
