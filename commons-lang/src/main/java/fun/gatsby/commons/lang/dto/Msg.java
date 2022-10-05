@@ -25,7 +25,7 @@ public class Msg<T> implements Serializable, IResult {
     //提示信息
     private String msg;
 
-    private Msg() {
+    Msg() {
     }
 
     public static <T> Msg<T> of(String msg, int code) {
