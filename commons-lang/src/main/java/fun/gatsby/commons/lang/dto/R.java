@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author Civin
  */
 @Data
-public class Msg<T> implements Serializable, IResult {
+public class R<T> implements Serializable, IResult {
 
     public static int CODE_OK = 200;
     public static int CODE_NOK = 500;
@@ -25,41 +25,41 @@ public class Msg<T> implements Serializable, IResult {
     //提示信息
     private String msg;
 
-    Msg() {
+    R() {
     }
 
-    public static <T> Msg<T> of(String msg, int code) {
-        var dto = new Msg<T>();
+    public static <T> R<T> of(String msg, int code) {
+        var dto = new R<T>();
         dto.msg = msg;
         dto.code = code;
         return dto;
     }
 
-    public static <T> Msg<T> of(String msg, int code, T data) {
-        var dto = new Msg<T>();
+    public static <T> R<T> of(String msg, int code, T data) {
+        var dto = new R<T>();
         dto.data = data;
         dto.msg = msg;
         dto.code = code;
         return dto;
     }
 
-    public static <T> Msg<T> ok() {
+    public static <T> R<T> ok() {
         return of(MSG_OK, CODE_OK);
     }
 
-    public static <T> Msg<T> ok(T data) {
+    public static <T> R<T> ok(T data) {
         return of(MSG_OK, CODE_OK, data);
     }
 
-    public static <T> Msg<T> nok() {
+    public static <T> R<T> nok() {
         return of(MSG_NOK, CODE_NOK);
     }
 
-    public static <T> Msg<T> nok(IStatusEnum statusEnum) {
+    public static <T> R<T> nok(IStatusEnum statusEnum) {
         return of(statusEnum.getMessage(), statusEnum.getCode());
     }
 
-    public static <T> Msg<T> nok(T data) {
+    public static <T> R<T> nok(T data) {
         return of(MSG_NOK, CODE_NOK, data);
     }
 }
