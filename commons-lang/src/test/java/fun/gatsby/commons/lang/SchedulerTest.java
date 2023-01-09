@@ -45,7 +45,7 @@ public class SchedulerTest extends TestCase {
 
         LinkedList<Runnable> tasks = new LinkedList<>();
         IntStream.range(0, userSize).forEach(i -> {
-            TaskGroup taskGroup = new TaskGroup();
+            TaskGroup taskGroup = new MyTaskGroup();
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
@@ -54,6 +54,18 @@ public class SchedulerTest extends TestCase {
             tasks.addAll(taskGroup);
         });
         return tasks;
+    }
+}
+@Slf4j
+class MyTaskGroup extends TaskGroup{
+    @Override
+    public synchronized void beforeFirstStart() {
+        log.info("任务组{}开始前的流程执行",name);
+    }
+
+    @Override
+    public void afterAllDone() {
+        log.info("任务组{}结束后的流程执行",name);
     }
 }
 
@@ -68,6 +80,7 @@ class MyPlan implements Runnable {
     @Override
     public void run() {
         try {
+            log.info("{}开始执行",name);
             Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -75,6 +88,5 @@ class MyPlan implements Runnable {
         if (name.startsWith("用户9")) {
             throw new RuntimeException("error");
         }
-
     }
 }

@@ -10,13 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class TaskGroup extends AbstractTaskGroup {
 
-    final ReentrantLock firstStartLock = new ReentrantLock();
+    protected final ReentrantLock firstStartLock = new ReentrantLock();
 
     protected volatile boolean cancelled = false;
 
-    int id;
+    protected int id;
 
-    String name;
+    protected String name;
 
     public TaskGroup() {
         int code = UUID.randomUUID().hashCode();
@@ -82,7 +82,7 @@ public class TaskGroup extends AbstractTaskGroup {
                 return;
             }
             lock.lock();
-            int count = taskCountAwaitingToFinish.decrementAndGet();
+            int count = taskCountAwait.decrementAndGet();
             try {
                 if (count + 1 == size()) {
                     beforeFirstStart();

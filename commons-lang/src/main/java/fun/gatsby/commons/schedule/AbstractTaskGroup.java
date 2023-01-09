@@ -9,20 +9,20 @@ public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
     /**
      * 剩余未完成的任务的数量
      */
-    protected AtomicInteger taskCountAwaitingToFinish = new AtomicInteger(0);
+    protected AtomicInteger taskCountAwait = new AtomicInteger(0);
 
     public AbstractTaskGroup() {
     }
 
     public AbstractTaskGroup(Collection<? extends Runnable> taskQueue) {
         this.addAll(taskQueue);
-        this.taskCountAwaitingToFinish.addAndGet(taskQueue.size());
+        this.taskCountAwait.addAndGet(taskQueue.size());
     }
 
     @Override
     public boolean add(Runnable task) {
         var taskWrapper = this.wrapTask(task);
-        this.taskCountAwaitingToFinish.addAndGet(1);
+        this.taskCountAwait.addAndGet(1);
         return super.add(taskWrapper);
     }
 
