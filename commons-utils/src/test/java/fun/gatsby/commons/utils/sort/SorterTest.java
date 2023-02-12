@@ -30,7 +30,7 @@ public class SorterTest extends TestCase {
         Sorter sorter = new Sorter();
         for (Method m : methods) {
             String methodName = m.getName();
-            Object ints = (Object)Arrays.copyOf(nums, nums.length);
+            Object ints = Arrays.copyOf(nums, nums.length);
             long s = System.currentTimeMillis();
             Object out = m.invoke(sorter, ints);
             long  duration = System.currentTimeMillis()-s;
