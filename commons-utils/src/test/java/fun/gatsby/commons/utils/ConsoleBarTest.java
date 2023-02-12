@@ -6,9 +6,8 @@ public class ConsoleBarTest {
         ConsoleProgressBar bar = new ConsoleProgressBar();
         bar.showCurrent();
         for (int i = 0; i < 100; i++) {
-            bar.iterate(51);
-            bar.showCurrent();
-            Thread.sleep(50);
+            Thread.sleep(1000);
+            bar.iterate();
         }
 //        for(int i = 0; i < 5; i++) {
 //            System.out.println("**********************************");

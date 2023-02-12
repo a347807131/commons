@@ -8,13 +8,15 @@ public class ConsoleProgressBar {
 
     private static final DecimalFormat floatPercentFormater = new DecimalFormat("0.00%");
     private static final DecimalFormat floatFormater = new DecimalFormat("0.00");
-    private final AtomicInteger currentValue = new AtomicInteger();
-    private final AtomicInteger currentSpeed = new AtomicInteger(Integer.MAX_VALUE);
+    private final AtomicInteger currentValue = new AtomicInteger(0);
+    private volatile long currentSpeed = 1024 * 1000;
     char progressChar = '█';
     char waitChar = '#';
     private int total = 100;
 
     private int barLen = 50;
+
+    private long startTime;
 
     public ConsoleProgressBar() {
     }
@@ -24,12 +26,15 @@ public class ConsoleProgressBar {
     }
 
     public synchronized void iterate() {
-        this.currentValue.addAndGet(1);
+        int value = this.currentValue.addAndGet(1);
+        if (value == 1) {
+            this.startTime = System.currentTimeMillis();
+        }
+        show(value);
     }
 
-    public synchronized void iterate(int speed) {
-        this.currentValue.addAndGet(1);
-        this.currentSpeed.set(speed);
+    public void showCurrent() {
+        show(0);
     }
 
 
@@ -47,16 +52,39 @@ public class ConsoleProgressBar {
         for (int i = 0; i < barLen - len; i++) {
             System.out.print(waitChar);
         }
-        float minsLeft = (1 - rate) * total / currentSpeed.get();
+
+        float secondsTotalSpent = value == 0 ? 0 : (System.currentTimeMillis() - startTime) / 1000f;
+        float speed = value == 0 ? 0 : secondsTotalSpent / value;
+        int secondsLeft = (int) ((total - value) * speed);
 
         System.out.print(" |" + floatPercentFormater.format(rate));
-        System.out.print(" |" + floatFormater.format(minsLeft) + "mins");
+        System.out.print(" |" + floatFormater.format(speed) + " avg spi");
+        System.out.print(" |" + genHMS(secondsLeft));
+        System.out.print(" |" + (total - value) + " units left");
+
         if (value == total)
             System.out.println();
     }
 
-    public void showCurrent() {
-        show(currentValue.get());
+    String genHMS(long second) {
+
+        String str = "00:00:00";
+        if (second < 0) {
+            return str;
+        }
+
+        // 得到小时
+        long h = second / 3600;
+        str = h > 0 ? ((h < 10 ? ("0" + h) : h) + ":") : "00:";
+
+        // 得到分钟
+        long m = (second % 3600) / 60;
+        str += (m < 10 ? ("0" + m) : m) + ":";
+
+        //得到剩余秒
+        long s = second % 60;
+        str += (s < 10 ? ("0" + s) : s);
+        return str;
     }
 
     /**
