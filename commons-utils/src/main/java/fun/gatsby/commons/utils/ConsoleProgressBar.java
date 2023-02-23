@@ -12,7 +12,7 @@ public class ConsoleProgressBar {
     private volatile long currentSpeed = 1024 * 1000;
     char progressChar = '█';
     char waitChar = '#';
-    private int total = 100;
+    private final AtomicInteger total = new AtomicInteger(100);
 
     private int barLen = 50;
 
@@ -22,7 +22,7 @@ public class ConsoleProgressBar {
     }
 
     public ConsoleProgressBar(int total) {
-        this.total = total;
+        this.total .set(total);
     }
 
     public synchronized void iterate() {
@@ -34,36 +34,37 @@ public class ConsoleProgressBar {
     }
 
     public void showCurrent() {
-        show(0);
+        show(this.currentValue.get());
     }
 
 
+    int last=0;
     synchronized void show(int value) {
+        last=value;
+        int totalV=total.get();
         System.out.print('\r');
         System.out.print(ColorEnum.RED.value);
         // 比例
-        float rate = value * 1f / total;
+        float rate = value * 1f / totalV;
 
         int len = (int) (rate * barLen);
-        System.out.print("Progress: ");
+        StringBuilder sb = new StringBuilder("Progress: ");
         for (int i = 0; i < len; i++) {
-            System.out.print(progressChar);
+            sb.append(progressChar);
         }
         for (int i = 0; i < barLen - len; i++) {
-            System.out.print(waitChar);
+            sb.append(waitChar);
         }
 
         float secondsTotalSpent = value == 0 ? 0 : (System.currentTimeMillis() - startTime) / 1000f;
         float speed = value == 0 ? 0 : secondsTotalSpent / value;
-        int secondsLeft = (int) ((total - value) * speed);
+        int secondsLeft = (int) ((totalV - value) * speed);
 
-        System.out.print(" |" + floatPercentFormater.format(rate));
-        System.out.print(" |" + floatFormater.format(speed) + " avg spi");
-        System.out.print(" |" + genHMS(secondsLeft));
-        System.out.print(" |" + (total - value) + " units left");
-
-        if (value == total)
-            System.out.println();
+        sb.append(" |").append(floatPercentFormater.format(rate));
+        sb.append(" |").append(floatFormater.format(speed)).append(" avg spi");
+        sb.append(" |").append( genHMS(secondsLeft));
+        sb.append(" |").append(totalV - value).append(" units left");
+        System.out.println(sb);
     }
 
     String genHMS(long second) {

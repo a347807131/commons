@@ -39,7 +39,7 @@
         <dependency>
             <groupId>fun.gatsby</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
+            <version>1.0.5</version>
         </dependency>
     </dependencies>
 </project>
