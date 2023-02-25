@@ -5,7 +5,7 @@
     <parent>
         <artifactId>commons</artifactId>
         <groupId>fun.gatsby</groupId>
-        <version>1.0.5</version>
+        <version>1.1</version>
     </parent>
     <artifactId>commons-lang</artifactId>
     <name>commons-lang</name>
