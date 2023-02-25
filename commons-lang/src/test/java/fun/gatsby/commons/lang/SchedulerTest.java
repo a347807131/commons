@@ -5,7 +5,6 @@ import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,12 +15,11 @@ import java.util.stream.IntStream;
 /**
  * @Date: 2022/3/9 14:52
  */
-@Slf4j
 public class SchedulerTest extends TestCase {
     public void testExecutor() {
 
         List<Runnable> tasks = genTasks();
-        ExecutorService threadPool = Executors.newFixedThreadPool(3);
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
         tasks.forEach(threadPool::submit);
         threadPool.shutdown();
         boolean terminated;
@@ -48,26 +46,31 @@ public class SchedulerTest extends TestCase {
         int userSize = 10;
         int jobSize = 100;
 
-        var taskGroupOfAll = new LinkedList<Runnable>();
+        LinkedList<Runnable> tasks = new LinkedList<>();
         IntStream.range(0, userSize).forEach(i -> {
-            TaskGroup taskGroup = new TaskGroup();
-            taskGroup.setTaskAfterAllDone(() -> {
-                log.info(taskGroup.getId() + "done");
-            });
+            TaskGroup taskGroup = new MyTaskGroup();
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
                 taskGroup.add(myPlan);
             }
-            taskGroupOfAll.addAll(taskGroup);
+            tasks.addAll(taskGroup);
         });
-        return taskGroupOfAll;
+        return tasks;
+    }
+}
+
+@Slf4j
+class MyTaskGroup extends TaskGroup {
+    @Override
+    public synchronized void beforeFirstStart() {
+        log.info("任务组{}开始前的流程执行", name);
     }
 
-    @Test
-    public void t3() {
+    @Override
+    public void afterAllDone() {
+        log.info("任务组{}结束后的流程执行", name);
     }
-
 }
 
 /**
@@ -81,6 +84,7 @@ class MyPlan implements Runnable {
     @Override
     public void run() {
         try {
+            log.info("{}开始执行", name);
             Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

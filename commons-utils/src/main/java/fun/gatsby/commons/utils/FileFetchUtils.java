@@ -16,23 +16,23 @@ public class FileFetchUtils {
         if (files == null) return;
         for (File file : files) {
             if (file.isDirectory())
-                fetchFileRecursively(container,file,filter);
+                fetchFileRecursively(container, file, filter);
             else
                 container.add(file);
         }
     }
 
-    public static int countFileRecursively(File dir){
-        return countFileRecursively(dir,null);
+    public static int countFileRecursively(File dir) {
+        return countFileRecursively(dir, null);
     }
 
-    public static int countFileRecursively(File dir, FilenameFilter filter){
+    public static int countFileRecursively(File dir, FilenameFilter filter) {
         int count = 0;
         File[] files = dir.listFiles(filter);
-        if (files==null) return count;
+        if (files == null) return count;
         for (File file : files) {
-            if(file.isDirectory())
-                count+=countFileRecursively(file,filter);
+            if (file.isDirectory())
+                count += countFileRecursively(file, filter);
             else
                 count++;
         }
