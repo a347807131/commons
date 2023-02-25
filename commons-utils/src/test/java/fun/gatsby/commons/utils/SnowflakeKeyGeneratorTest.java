@@ -18,7 +18,7 @@ public class SnowflakeKeyGeneratorTest extends TestCase {
         for (int i = 0; i < 1000; i++) {
             long id = idWorker.nextId();
             set.add(id);
-            log.info("id----"+i+":"+id);
+            log.info("id----" + i + ":" + id);
         }
         long endTime = System.currentTimeMillis();
         log.info("set.size():" + set.size());

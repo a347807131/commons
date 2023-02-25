@@ -59,16 +59,17 @@ public class SchedulerTest extends TestCase {
         return tasks;
     }
 }
+
 @Slf4j
-class MyTaskGroup extends TaskGroup{
+class MyTaskGroup extends TaskGroup {
     @Override
     public synchronized void beforeFirstStart() {
-        log.info("任务组{}开始前的流程执行",name);
+        log.info("任务组{}开始前的流程执行", name);
     }
 
     @Override
     public void afterAllDone() {
-        log.info("任务组{}结束后的流程执行",name);
+        log.info("任务组{}结束后的流程执行", name);
     }
 }
 
@@ -83,7 +84,7 @@ class MyPlan implements Runnable {
     @Override
     public void run() {
         try {
-            log.info("{}开始执行",name);
+            log.info("{}开始执行", name);
             Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

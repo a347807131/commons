@@ -23,7 +23,7 @@ final class SnowFlakeKeyGenerator {
 
     private static final long WORKER_ID_MAX_VALUE = 1L << WORKER_ID_BITS;
 
-    private static long workerId=0;
+    private static long workerId = 0;
 
     private static int maxTolerateTimeDifferenceMilliseconds = 10;
 
@@ -98,8 +98,8 @@ final class SnowFlakeKeyGenerator {
         try {
 
             Thread.sleep(timeDifferenceMilliseconds);
-        }catch (Exception e){
-            log.error("",e);
+        } catch (Exception e) {
+            log.error("", e);
             throw new RuntimeException(e);
         }
         return true;
@@ -119,6 +119,7 @@ final class SnowFlakeKeyGenerator {
 
 
 }
+
 /**
  * Twitter_Snowflake<br>
  * SnowFlake的结构如下(每部分用-分开):<br>
@@ -229,6 +230,23 @@ class SnowFlake {
     // ==============================Methods==========================================
 
     /**
+     * 测试
+     */
+    public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+        SnowFlake idWorker = new SnowFlake(0, 0);
+        Set set = new HashSet();
+        for (int i = 0; i < 10000000; i++) {
+            long id = idWorker.nextId();
+            set.add(id);
+            System.out.println("id----" + i + ":" + id);
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("set.size():" + set.size());
+        System.out.println("endTime-startTime:" + (endTime - startTime));
+    }
+
+    /**
      * 获得下一个ID (该方法是线程安全的)
      *
      * @return SnowflakeId
@@ -280,6 +298,8 @@ class SnowFlake {
         return timestamp;
     }
 
+    //==============================Test=============================================
+
     /**
      * 返回以毫秒为单位的当前时间
      *
@@ -287,24 +307,5 @@ class SnowFlake {
      */
     protected long timeGen() {
         return System.currentTimeMillis();
-    }
-
-    //==============================Test=============================================
-
-    /**
-     * 测试
-     */
-    public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
-        SnowFlake idWorker = new SnowFlake(0, 0);
-        Set set = new HashSet();
-        for (int i = 0; i < 10000000; i++) {
-            long id = idWorker.nextId();
-            set.add(id);
-            System.out.println("id----"+i+":"+id);
-        }
-        long endTime = System.currentTimeMillis();
-        System.out.println("set.size():" + set.size());
-        System.out.println("endTime-startTime:" + (endTime - startTime));
     }
 }

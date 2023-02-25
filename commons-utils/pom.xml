@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>commons</artifactId>
@@ -23,8 +23,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>commons-lang</groupId>
+            <groupId>fun.gatsby</groupId>
             <artifactId>commons-lang</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -35,11 +36,6 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.9.4</version>
-        </dependency>
-        <dependency>
-            <groupId>fun.gatsby</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
