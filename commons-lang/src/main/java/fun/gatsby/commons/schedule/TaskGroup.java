@@ -11,13 +11,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author gatsby
  */
 @Slf4j
-public class TaskGroup extends AbstractTaskGroup {
+public class TaskGroup<T> extends AbstractTaskGroup {
 
     protected final ReentrantLock firstStartLock = new ReentrantLock();
 
     protected volatile boolean cancelled = false;
-
-    protected int id;
 
     protected String name;
 
@@ -25,16 +23,18 @@ public class TaskGroup extends AbstractTaskGroup {
 
     Runnable taskAfterAllDone = null;
 
+    volatile TaskStateEnum state = TaskStateEnum.NEW;
+
+    boolean denpendOnLast = false;
+
 
     public TaskGroup() {
         int code = UUID.randomUUID().hashCode();
-        this.id = code < 0 ? -code : code;
-        this.name = "task-group-" + id;
+        this.name = "task-group-" + code;
     }
 
     public TaskGroup(int id, String name, Collection<? extends Runnable> tasks) {
         super(tasks);
-        this.id = id;
         this.name = name;
     }
 
@@ -44,14 +44,6 @@ public class TaskGroup extends AbstractTaskGroup {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     /**
@@ -85,6 +77,7 @@ public class TaskGroup extends AbstractTaskGroup {
         if (taskAfterAllDone != null) {
             taskAfterAllDone.run();
         }
+        state = TaskStateEnum.FINISHED;
     }
 
     /**

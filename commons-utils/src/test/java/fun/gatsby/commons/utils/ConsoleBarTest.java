@@ -9,7 +9,6 @@ import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 @Slf4j
 public class ConsoleBarTest {
@@ -37,7 +36,7 @@ public class ConsoleBarTest {
         for (int i = 0; i < userSize; i++) {
             TaskGroup taskGroup = new TaskGroup();
             taskGroup.setTaskAfterAllDone(() -> {
-                log.info(taskGroup.getId() + "done");
+                log.info(taskGroup.getName() + "done");
             });
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();

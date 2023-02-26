@@ -6,12 +6,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractTaskGroup extends LinkedList<Runnable> {
 
+    protected volatile TaskStateEnum state = TaskStateEnum.NEW;
+
     /**
      * 剩余未完成的任务的数量
      */
     protected AtomicInteger taskCountAwait = new AtomicInteger(0);
 
     public AbstractTaskGroup() {
+    }
+
+    public TaskStateEnum getState() {
+        return state;
     }
 
     public AbstractTaskGroup(Collection<? extends Runnable> taskQueue) {

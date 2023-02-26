@@ -1,7 +1,5 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.schedule;
 
-import fun.gatsby.commons.schedule.Scheduler;
-import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
