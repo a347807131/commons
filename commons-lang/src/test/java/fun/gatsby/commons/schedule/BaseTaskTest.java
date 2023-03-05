@@ -30,14 +30,14 @@ public class BaseTaskTest extends TestCase {
         // FIXME: 2023/2/27 存在运行时添加任务，任务不执行的问题
         for (int i = 0; i < 5; i++) {
             TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-            taskJoinPool.addABatch(taskGroup);
+            taskJoinPool.scheduleBatch(taskGroup);
         }
         taskJoinPool.start();
     }
 
-    static TaskGroup genTasks(String groupName) {
-        int jobSize = 2;
-        TaskGroup taskGroup = new TaskGroup();
+    static TaskGroup<Runnable> genTasks(String groupName) {
+        int jobSize = 200;
+        TaskGroup<Runnable> taskGroup = new TaskGroup<>();
         taskGroup.name = groupName;
         taskGroup.taskAfterAllDone = () -> log.debug("任务组{}执行完毕", groupName);
         taskGroup.taskBeforeFirstStart = () -> log.debug("任务组{}开始执行", groupName);
@@ -51,19 +51,20 @@ public class BaseTaskTest extends TestCase {
 
     public void test2() throws ExecutionException, InterruptedException {
         MyTaskJoinPool taskJoinPool = new MyTaskJoinPool(10);
-        Thread thread = new Thread(() -> {
-            for (int i = 0; i < 10; i++) {
-                TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-                taskJoinPool.addABatch(taskGroup);
-            }
-        });
-        thread.start();
-//        for (int i = 0; i < 10; i++) {
-//            TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-//            taskJoinPool.addABatch(taskGroup);
-//        }
+//        Thread thread = new Thread(() -> {
+//            for (int i = 0; i < 10; i++) {
+//                TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
+//                taskJoinPool.addABatch(taskGroup);
+//            }
+//        });
+//        thread.start();
+        for (int i = 0; i < 10; i++) {
+            TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
+            taskJoinPool.scheduleBatch(taskGroup);
+        }
         taskJoinPool.start();
-        thread.join();
+//        thread.join();
+        System.out.println("执行完毕");
     }
 
     static class PlanB extends BaseTask {
@@ -76,7 +77,7 @@ public class BaseTaskTest extends TestCase {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-//           log.debug("PlanB"+name+"执行完毕");
+            log.debug("PlanB" + name + "执行完毕");
         }
     }
 }

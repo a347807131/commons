@@ -9,37 +9,41 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MyTaskJoinPool extends ForkJoinPool {
 
+    LinkedBlockingQueue<Node> nodes = new LinkedBlockingQueue<>();
+
+
     public MyTaskJoinPool(int parallelism) {
         super(parallelism);
     }
 
-    LinkedBlockingQueue<Entry> entries = new LinkedBlockingQueue<>();
+    public MyTaskJoinPool() {
+        super();
+    }
 
-    public void addABatch(List<Runnable>... tasksArr) {
-        for (int i = 0; i < tasksArr.length; i++) {
-            List<Runnable> tasks = tasksArr[i];
-            Entry entry = new Entry();
-            entry.denpendOnLast = i != 0;
-            entry.childrens.addAll(tasks);
-            entries.add(entry);
-
+    public void scheduleBatch(List<Runnable>... batchs) {
+        for (int i = 0; i < batchs.length; i++) {
+            var batch = batchs[i];
+            Node node = new Node();
+            node.denpendOnLast = i != 0;
+            node.childrens.addAll(batch);
+            nodes.add(node);
         }
-        for (List<Runnable> tasks : tasksArr) {
-            Entry entry = new Entry();
-            entry.denpendOnLast = true;
-            entry.childrens.addAll(tasks);
-            entries.add(entry);
-        }
+    }
 
+    public void scheduleBatch(Runnable... runnables) {
+        Node node = new Node();
+        node.childrens.addAll(List.of(runnables));
+        nodes.add(node);
     }
 
     public void start() throws ExecutionException, InterruptedException {
-        for (Entry entry : entries) {
-            entry.state = TaskStateEnum.RUNNING;
-            ForkJoinTask<?> forkJoinTask = runTaskGroup(entry.childrens);
-            if (entry.denpendOnLast)
+        for (Node node : nodes) {
+            node.state = TaskStateEnum.RUNNING;
+            //不会阻塞
+            ForkJoinTask<?> forkJoinTask = runTaskGroup(node.childrens);
+            if (node.denpendOnLast)
                 forkJoinTask.get();
-            entry.state = TaskStateEnum.FINISHED;
+            node.state = TaskStateEnum.FINISHED;
         }
     }
 
@@ -47,7 +51,7 @@ public class MyTaskJoinPool extends ForkJoinPool {
         return this.submit(() -> tasks.parallelStream().forEach(Runnable::run));
     }
 
-    class Entry {
+    static class Node {
         boolean denpendOnLast = false;
         TaskStateEnum state = TaskStateEnum.WAITING;
         List<Runnable> childrens = new LinkedList<>();
