@@ -9,6 +9,8 @@ public abstract class AbstractTaskGroup<R> extends LinkedList<Runnable> {
 
     protected volatile TaskStateEnum state = TaskStateEnum.NEW;
 
+    protected volatile TaskStateEnum state = TaskStateEnum.NEW;
+
     /**
      * 剩余未完成的任务的数量
      */

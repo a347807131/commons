@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class Sorter implements ISortAlgorithm {
 
-    public int[] quickSort(int[] arr){
+    public int[] quickSort(int[] arr) {
         // 对 arr 进行拷贝，不改变参数内容
         return quickSort(arr, 0, arr.length - 1);
     }
@@ -102,7 +102,7 @@ public class Sorter implements ISortAlgorithm {
         return arr;
     }
 
-    public int[] HeapSort(int[] sourceArray){
+    public int[] HeapSort(int[] sourceArray) {
         // 对 arr 进行拷贝，不改变参数内容
         int[] arr = Arrays.copyOf(sourceArray, sourceArray.length);
 
@@ -143,7 +143,7 @@ public class Sorter implements ISortAlgorithm {
         }
     }
 
-    public int[] countingSort(int[] arr){
+    public int[] countingSort(int[] arr) {
         int maxValue = getMaxValue(arr);
         return countingSort(arr, maxValue);
     }
@@ -166,14 +166,14 @@ public class Sorter implements ISortAlgorithm {
         return arr;
     }
 
-    public int[] bucketSort(int[] sourceArray){
+    public int[] bucketSort(int[] sourceArray) {
         // 对 arr 进行拷贝，不改变参数内容
         int[] arr = Arrays.copyOf(sourceArray, sourceArray.length);
 
         return bucketSort(arr, 5);
     }
 
-    private int[] bucketSort(int[] arr, int bucketSize){
+    private int[] bucketSort(int[] arr, int bucketSize) {
         if (arr.length == 0) {
             return arr;
         }
@@ -212,7 +212,7 @@ public class Sorter implements ISortAlgorithm {
         return arr;
     }
 
-    public int[] radixSort(int[] sourceArray){
+    public int[] radixSort(int[] sourceArray) {
         // 对 arr 进行拷贝，不改变参数内容
         int[] arr = Arrays.copyOf(sourceArray, sourceArray.length);
 

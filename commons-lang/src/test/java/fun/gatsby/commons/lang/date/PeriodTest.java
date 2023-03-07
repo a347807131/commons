@@ -13,10 +13,10 @@ import java.util.List;
 @Slf4j
 public class PeriodTest extends TestCase {
 
-    DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public void testDivideByMonth() throws ParseException {
-        Period period=new Period(dateFormat.parse("2018-01-01"),dateFormat.parse("2018-05-31"));
+        Period period = new Period(dateFormat.parse("2018-01-01"), dateFormat.parse("2018-05-31"));
         List<Period> periods = period.divideByMonth();
         Assert.assertEquals(5, periods.size());
     }

@@ -24,7 +24,7 @@ public class FileFetchUtilsTest extends TestCase {
         for (int i = 0; i < times; i++) {
             FileFetchUtils.fetchFileRecursively(list, new File("./"));
         }
-        log.info("数量：{}",list.size());
+        log.info("数量：{}", list.size());
 
     }
 }

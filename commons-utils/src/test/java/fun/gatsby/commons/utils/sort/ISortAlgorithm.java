@@ -4,7 +4,14 @@ import java.util.Arrays;
 
 public interface ISortAlgorithm {
 
-    default int[] merge(int[] left,int[] right){
+    static boolean exam(int[] arr) {
+        for (int i = 0; i < arr.length - 1; i++) {
+            if (arr[i] > arr[i + 1]) return false;
+        }
+        return true;
+    }
+
+    default int[] merge(int[] left, int[] right) {
         return null;
     }
 
@@ -16,6 +23,7 @@ public interface ISortAlgorithm {
 
     /**
      * 自动扩容，并保存数据
+     *
      * @param arr
      * @param value
      */
@@ -33,12 +41,5 @@ public interface ISortAlgorithm {
             }
         }
         return maxValue;
-    }
-
-     static boolean exam(int[] arr){
-        for (int i = 0; i < arr.length-1; i++) {
-            if(arr[i]>arr[i+1] ) return  false;
-        }
-        return true;
     }
 }
