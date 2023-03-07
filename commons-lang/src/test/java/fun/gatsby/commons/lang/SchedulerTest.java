@@ -44,7 +44,7 @@ public class SchedulerTest extends TestCase {
         tasks.stream().parallel().forEach(Runnable::run);
     }
 
-    List<Runnable> genTasks() {
+    public List<Runnable> genTasks() {
         int userSize = 10;
         int jobSize = 100;
 
@@ -52,7 +52,7 @@ public class SchedulerTest extends TestCase {
         IntStream.range(0, userSize).forEach(i -> {
             TaskGroup taskGroup = new TaskGroup();
             taskGroup.setTaskAfterAllDone(() -> {
-                log.info(taskGroup.getId() + "done");
+                log.info(taskGroup.getName() + "done");
             });
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
@@ -86,6 +86,8 @@ class MyPlan implements Runnable {
             throw new RuntimeException(e);
         }
         if (name.startsWith("用户9")) {
+            log.warn("模拟出错");
+            int i = 1 / 0;
             throw new RuntimeException("error");
         }
 

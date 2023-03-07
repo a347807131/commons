@@ -1,5 +1,6 @@
 package fun.gatsby.commons.schedule;
 
+
 public abstract class AbstractTask implements ITask {
     /**
      * 线程池执行前

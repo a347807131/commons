@@ -1,5 +1,6 @@
 package fun.gatsby.commons.schedule;
 
-public class CommonTaskGroup extends AbstractTaskGroup {
+
+public class CommonTaskGroup extends AbstractTaskGroup<Runnable> {
 
 }
