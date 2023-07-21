@@ -1,11 +1,8 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.schedule;
 
-import fun.gatsby.commons.schedule.Scheduler;
-import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -50,10 +47,8 @@ public class SchedulerTest extends TestCase {
 
         var taskGroupOfAll = new LinkedList<Runnable>();
         IntStream.range(0, userSize).forEach(i -> {
-            TaskGroup taskGroup = new TaskGroup();
-            taskGroup.setTaskAfterAllDone(() -> {
-                log.info(taskGroup.getName() + "done");
-            });
+            TaskGroup<Runnable> taskGroup = new TaskGroup();
+            taskGroup.setName("组" + i);
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
@@ -63,11 +58,6 @@ public class SchedulerTest extends TestCase {
         });
         return taskGroupOfAll;
     }
-
-    @Test
-    public void t3() {
-    }
-
 }
 
 /**
@@ -88,7 +78,6 @@ class MyPlan implements Runnable {
         if (name.startsWith("用户9")) {
             log.warn("模拟出错");
             int i = 1 / 0;
-            throw new RuntimeException("error");
         }
 
     }

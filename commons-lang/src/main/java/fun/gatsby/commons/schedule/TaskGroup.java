@@ -13,15 +13,11 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
 
-    protected final ReentrantLock firstStartLock = new ReentrantLock();
+    final ReentrantLock firstEntryLock = new ReentrantLock();
 
     protected volatile boolean cancelled = false;
 
     protected String name;
-
-    Runnable taskBeforeFirstStart = null;
-
-    Runnable taskAfterAllDone = null;
 
     volatile TaskStateEnum state = TaskStateEnum.NEW;
 
@@ -57,14 +53,6 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
         return cancelled;
     }
 
-    public void setTaskBeforeFirstStart(Runnable taskBeforeFirstStart) {
-        this.taskBeforeFirstStart = taskBeforeFirstStart;
-    }
-
-    public void setTaskAfterAllDone(Runnable taskAfterAllDone) {
-        this.taskAfterAllDone = taskAfterAllDone;
-    }
-
     @Override
     protected Runnable wrapTask(Runnable task) {
         return new TaskProxy(task);
@@ -74,10 +62,9 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
      */
     public void afterAllDone() {
-        if (taskAfterAllDone != null) {
-            taskAfterAllDone.run();
-        }
         state = TaskStateEnum.FINISHED;
+
+        log.debug("任务组:{}执行完毕", name);
     }
 
     /**
@@ -86,9 +73,7 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
      */
     public synchronized void beforeFirstStart() {
-        if (taskBeforeFirstStart != null) {
-            taskBeforeFirstStart.run();
-        }
+        log.debug("任务组:{}开始执行", name);
     }
 
     /**
@@ -111,12 +96,11 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
             if (cancelled) {
                 return;
             }
+            // TODO: 2023/7/21
             int count = taskCountAwait.decrementAndGet();
             try {
-                synchronized (TaskGroup.this) {
-                    if (count + 1 == size()) {
-                        beforeFirstStart();
-                    }
+                if (count + 1 == size()) {
+                    beforeFirstStart();
                 }
                 task.run();
             } catch (Exception e) {

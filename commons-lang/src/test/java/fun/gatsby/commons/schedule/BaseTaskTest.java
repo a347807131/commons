@@ -17,30 +17,10 @@ public class BaseTaskTest extends TestCase {
         ForkJoinPool pool3 = new ForkJoinPool(4);
     }
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        MyTaskJoinPool taskJoinPool = new MyTaskJoinPool(10);
-//        Thread thread = new Thread(() -> {
-//            for (int i = 0; i < 10; i++) {
-//                TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-//                taskJoinPool.addABatch(taskGroup);
-//                System.out.println("任务组" + i + "添加完毕");
-//            }
-//        });
-//        thread.start();
-        // FIXME: 2023/2/27 存在运行时添加任务，任务不执行的问题
-        for (int i = 0; i < 5; i++) {
-            TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-            taskJoinPool.scheduleBatch(taskGroup);
-        }
-        taskJoinPool.start();
-    }
-
     static TaskGroup<Runnable> genTasks(String groupName) {
         int jobSize = 200;
         TaskGroup<Runnable> taskGroup = new TaskGroup<>();
         taskGroup.name = groupName;
-        taskGroup.taskAfterAllDone = () -> log.debug("任务组{}执行完毕", groupName);
-        taskGroup.taskBeforeFirstStart = () -> log.debug("任务组{}开始执行", groupName);
         for (int j = 0; j < jobSize; j++) {
             PlanB planB = new PlanB();
             planB.name = "执行计划" + j;
@@ -50,21 +30,6 @@ public class BaseTaskTest extends TestCase {
     }
 
     public void test2() throws ExecutionException, InterruptedException {
-        MyTaskJoinPool taskJoinPool = new MyTaskJoinPool(10);
-//        Thread thread = new Thread(() -> {
-//            for (int i = 0; i < 10; i++) {
-//                TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-//                taskJoinPool.addABatch(taskGroup);
-//            }
-//        });
-//        thread.start();
-        for (int i = 0; i < 10; i++) {
-            TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
-            taskJoinPool.scheduleBatch(taskGroup);
-        }
-        taskJoinPool.start();
-//        thread.join();
-        System.out.println("执行完毕");
     }
 
     static class PlanB extends BaseTask {
