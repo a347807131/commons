@@ -86,9 +86,8 @@ class MyPlan implements Runnable {
             throw new RuntimeException(e);
         }
         if (name.startsWith("用户9")) {
-            log.warn("模拟出错");
-            int i = 1 / 0;
-            throw new RuntimeException("error");
+//            log.warn("模拟出错");
+//            int i = 1 / 0;
         }
 
     }

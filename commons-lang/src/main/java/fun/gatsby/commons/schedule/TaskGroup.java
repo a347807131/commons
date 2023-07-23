@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,7 +19,7 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
 
     protected final ReentrantLock preAndPostTaskLock = new ReentrantLock();
     Condition preTaskDoneCondition = preAndPostTaskLock.newCondition();
-    Boolean preTaskDone=false;
+    AtomicBoolean preTaskDone=new AtomicBoolean(false);
 
     AtomicInteger startedTaskCount=new AtomicInteger();
     AtomicInteger doneTaskCount=new AtomicInteger();
@@ -29,8 +31,6 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
     Runnable taskAfterAllDone = null;
 
     volatile TaskStateEnum state = TaskStateEnum.NEW;
-
-    boolean denpendOnLast = false;
 
     public TaskGroup() {
         int code = UUID.randomUUID().hashCode();
@@ -74,6 +74,7 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      * 全部任务执行完后的回调函数，只会有一个线程进入，也只会运行一次
      */
     public void afterAllDone() {
+        log.debug("name:{} 执行完成",name);
         if (taskAfterAllDone != null) {
             taskAfterAllDone.run();
         }
@@ -85,6 +86,7 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      * 只会有一个线程进入，也只会运行一次，后续不会再有线程进入
      */
     public synchronized void beforeFirstStart() {
+        log.debug("name:{} 开始执行",name);
         if (taskBeforeFirstStart != null) {
             taskBeforeFirstStart.run();
         }
@@ -111,27 +113,25 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
                 return;
             }
             
-            int doneCount = doneTaskCount.get();
-            if(!preTaskDone && doneCount!=0) {
-                try {
-                    preTaskDoneCondition.await();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if(startedCount==0 && !preTaskDone){
+            int startedCount = startedTaskCount.incrementAndGet();
+            if(!preTaskDone.get() && startedCount!=1) {
+                preAndPostTaskLock.lock();
+                preAndPostTaskLock.unlock();
+            } else if(startedCount==1 && !preTaskDone.get()){
                 beforeFirstStart();
-                preTaskDone=true;
+                if(preAndPostTaskLock.isLocked()){
+                    preAndPostTaskLock.unlock();
+                }
+                preTaskDone.compareAndSet(false,true);
                 // FIXME: 2023/7/24
-                preTaskDoneCondition.signalAll();
             }
             try {
                 task.run();
-                doneTaskCount
+                doneTaskCount.incrementAndGet();
             } catch (Exception e) {
                 onTaskException(task, e);
             } finally {
-                int doneCount = doneTaskCount.incrementAndGet();
-                if (doneCount == size() && TaskStateEnum.CANCELLED!=state) {
+                if (doneTaskCount.get() == size() && TaskStateEnum.CANCELLED!=state) {
                     state = TaskStateEnum.FINISHED;
                     afterAllDone();
                 }
