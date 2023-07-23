@@ -3,6 +3,7 @@ package fun.gatsby.commons.lang.dto;
 import fun.gatsby.commons.lang.IResult;
 import fun.gatsby.commons.lang.IStatusEnum;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -12,6 +13,7 @@ import java.io.Serializable;
  * @author Civin
  */
 @Data
+@NoArgsConstructor
 public class R<T> implements Serializable, IResult {
 
     public static int CODE_OK = 200;
@@ -24,9 +26,6 @@ public class R<T> implements Serializable, IResult {
     private int code;
     //提示信息
     private String msg;
-
-    R() {
-    }
 
     public static <T> R<T> of(String msg, int code) {
         var dto = new R<T>();

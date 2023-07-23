@@ -1,4 +1,4 @@
-package fun.gatsby.commons.lang;
+package fun.gatsby.commons.schedule;
 
 import fun.gatsby.commons.schedule.Scheduler;
 import fun.gatsby.commons.schedule.TaskGroup;

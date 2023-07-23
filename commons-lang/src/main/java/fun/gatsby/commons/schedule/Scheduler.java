@@ -98,5 +98,4 @@ public class Scheduler {
         tasks.clear();
         state = RUNNING;
     }
-
 }

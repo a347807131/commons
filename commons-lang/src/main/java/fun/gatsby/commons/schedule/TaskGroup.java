@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -13,9 +15,12 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
 
-    protected final ReentrantLock firstStartLock = new ReentrantLock();
+    protected final ReentrantLock preAndPostTaskLock = new ReentrantLock();
+    Condition preTaskDoneCondition = preAndPostTaskLock.newCondition();
+    Boolean preTaskDone=false;
 
-    protected volatile boolean cancelled = false;
+    AtomicInteger startedTaskCount=new AtomicInteger();
+    AtomicInteger doneTaskCount=new AtomicInteger();
 
     protected String name;
 
@@ -26,7 +31,6 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
     volatile TaskStateEnum state = TaskStateEnum.NEW;
 
     boolean denpendOnLast = false;
-
 
     public TaskGroup() {
         int code = UUID.randomUUID().hashCode();
@@ -50,11 +54,7 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      * 立即停止所有任务，剩余任务将不会执行原逻辑。
      */
     public void cancel() {
-        cancelled = true;
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
+        state=TaskStateEnum.CANCELLED;
     }
 
     public void setTaskBeforeFirstStart(Runnable taskBeforeFirstStart) {
@@ -77,7 +77,6 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
         if (taskAfterAllDone != null) {
             taskAfterAllDone.run();
         }
-        state = TaskStateEnum.FINISHED;
     }
 
     /**
@@ -108,21 +107,32 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
 
         @Override
         public void run() {
-            if (cancelled) {
+            if (TaskStateEnum.CANCELLED==state) {
                 return;
             }
-            int count = taskCountAwait.decrementAndGet();
-            try {
-                synchronized (TaskGroup.this) {
-                    if (count + 1 == size()) {
-                        beforeFirstStart();
-                    }
+            
+            int doneCount = doneTaskCount.get();
+            if(!preTaskDone && doneCount!=0) {
+                try {
+                    preTaskDoneCondition.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
+            } else if(startedCount==0 && !preTaskDone){
+                beforeFirstStart();
+                preTaskDone=true;
+                // FIXME: 2023/7/24
+                preTaskDoneCondition.signalAll();
+            }
+            try {
                 task.run();
+                doneTaskCount
             } catch (Exception e) {
                 onTaskException(task, e);
             } finally {
-                if (count == 0 && !cancelled) {
+                int doneCount = doneTaskCount.incrementAndGet();
+                if (doneCount == size() && TaskStateEnum.CANCELLED!=state) {
+                    state = TaskStateEnum.FINISHED;
                     afterAllDone();
                 }
             }

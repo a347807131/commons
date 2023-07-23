@@ -18,7 +18,7 @@ public class BaseTaskTest extends TestCase {
     }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        MyTaskJoinPool taskJoinPool = new MyTaskJoinPool(10);
+        TaskScheduleForkJoinPool taskJoinPool = new TaskScheduleForkJoinPool(10);
 //        Thread thread = new Thread(() -> {
 //            for (int i = 0; i < 10; i++) {
 //                TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
@@ -50,7 +50,7 @@ public class BaseTaskTest extends TestCase {
     }
 
     public void test2() throws ExecutionException, InterruptedException {
-        MyTaskJoinPool taskJoinPool = new MyTaskJoinPool(10);
+        TaskScheduleForkJoinPool taskJoinPool = new TaskScheduleForkJoinPool(10);
 //        Thread thread = new Thread(() -> {
 //            for (int i = 0; i < 10; i++) {
 //                TaskGroup<Runnable> taskGroup = genTasks("任务组" + i);
