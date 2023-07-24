@@ -115,15 +115,15 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
             
             int startedCount = startedTaskCount.incrementAndGet();
             if(!preTaskDone.get() && startedCount!=1) {
-                preAndPostTaskLock.lock();
-                preAndPostTaskLock.unlock();
+                while (!preTaskDone.get()){
+                    Thread.yield();
+                }
             } else if(startedCount==1 && !preTaskDone.get()){
                 beforeFirstStart();
                 if(preAndPostTaskLock.isLocked()){
                     preAndPostTaskLock.unlock();
                 }
                 preTaskDone.compareAndSet(false,true);
-                // FIXME: 2023/7/24
             }
             try {
                 task.run();

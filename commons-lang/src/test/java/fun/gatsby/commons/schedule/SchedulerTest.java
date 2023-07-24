@@ -21,7 +21,7 @@ public class SchedulerTest extends TestCase {
     public void testExecutor() {
 
         List<Runnable> tasks = genTasks();
-        ExecutorService threadPool = Executors.newFixedThreadPool(3);
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
         tasks.forEach(threadPool::submit);
         threadPool.shutdown();
         boolean terminated;
@@ -33,7 +33,7 @@ public class SchedulerTest extends TestCase {
 
     public void testScheduler() {
         List<Runnable> tasks = genTasks();
-        Scheduler scheduler = Scheduler.schedule(3, tasks);
+        Scheduler scheduler = Scheduler.schedule(4, tasks);
         scheduler.start();
         scheduler.await();
 
@@ -86,8 +86,8 @@ class MyPlan implements Runnable {
             throw new RuntimeException(e);
         }
         if (name.startsWith("用户9")) {
-//            log.warn("模拟出错");
-//            int i = 1 / 0;
+            log.warn("模拟出错");
+            int i = 1 / 0;
         }
 
     }
