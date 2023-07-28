@@ -50,10 +50,10 @@ public class SchedulerTest extends TestCase {
 
         var taskGroupOfAll = new LinkedList<Runnable>();
         IntStream.range(0, userSize).forEach(i -> {
-            TaskGroup taskGroup = new TaskGroup();
-            taskGroup.setTaskAfterAllDone(() -> {
-                log.info(taskGroup.getName() + "done");
-            });
+            TaskGroup<Runnable> taskGroup = new TaskGroup<>();
+            taskGroup.setPreAndPostTasks(() -> log.info("任务组 {} done",taskGroup.hashCode()),
+                    null
+                );
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);

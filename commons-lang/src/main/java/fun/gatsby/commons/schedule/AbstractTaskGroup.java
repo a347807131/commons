@@ -9,11 +9,12 @@ public abstract class AbstractTaskGroup<R> extends LinkedList<Runnable> {
 
     protected volatile TaskStateEnum state = TaskStateEnum.NEW;
 
-    public AbstractTaskGroup() {
-    }
-
     public TaskStateEnum getState() {
         return state;
+    }
+
+    public AbstractTaskGroup(){
+
     }
 
     public AbstractTaskGroup(Collection<? extends Runnable> taskQueue) {

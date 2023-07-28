@@ -1,5 +1,6 @@
 package fun.gatsby.commons.schedule;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -18,7 +19,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
 
     protected final ReentrantLock preAndPostTaskLock = new ReentrantLock();
-    Condition preTaskDoneCondition = preAndPostTaskLock.newCondition();
     AtomicBoolean preTaskDone=new AtomicBoolean(false);
 
     AtomicInteger startedTaskCount=new AtomicInteger();
@@ -26,28 +26,16 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
 
     protected String name;
 
-    Runnable taskBeforeFirstStart = null;
-
-    Runnable taskAfterAllDone = null;
+    Runnable preTask = null;
+    Runnable postTask = null;
 
     volatile TaskStateEnum state = TaskStateEnum.NEW;
 
-    public TaskGroup() {
-        int code = UUID.randomUUID().hashCode();
-        this.name = "task-group-" + code;
+    public TaskGroup(){
     }
 
-    public TaskGroup(int id, String name, Collection<? extends Runnable> tasks) {
-        super(tasks);
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public TaskGroup(Collection<? extends Runnable> taskQueue) {
+        super(taskQueue);
     }
 
     /**
@@ -57,13 +45,6 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
         state=TaskStateEnum.CANCELLED;
     }
 
-    public void setTaskBeforeFirstStart(Runnable taskBeforeFirstStart) {
-        this.taskBeforeFirstStart = taskBeforeFirstStart;
-    }
-
-    public void setTaskAfterAllDone(Runnable taskAfterAllDone) {
-        this.taskAfterAllDone = taskAfterAllDone;
-    }
 
     @Override
     protected Runnable wrapTask(Runnable task) {
@@ -75,9 +56,14 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      */
     public void afterAllDone() {
         log.debug("name:{} 执行完成",name);
-        if (taskAfterAllDone != null) {
-            taskAfterAllDone.run();
+        if (postTask != null) {
+            postTask.run();
         }
+    }
+
+    public void setPreAndPostTasks(Runnable pre,Runnable post){
+        this.preTask=pre;
+        this.postTask=post;
     }
 
     /**
@@ -87,8 +73,8 @@ public class TaskGroup<T> extends AbstractTaskGroup<Runnable> {
      */
     public synchronized void beforeFirstStart() {
         log.debug("name:{} 开始执行",name);
-        if (taskBeforeFirstStart != null) {
-            taskBeforeFirstStart.run();
+        if (preTask != null) {
+            preTask.run();
         }
     }
 

@@ -39,8 +39,9 @@ public class BaseTaskTest extends TestCase {
         int jobSize = 200;
         TaskGroup<Runnable> taskGroup = new TaskGroup<>();
         taskGroup.name = groupName;
-        taskGroup.taskAfterAllDone = () -> log.debug("任务组{}执行完毕", groupName);
-        taskGroup.taskBeforeFirstStart = () -> log.debug("任务组{}开始执行", groupName);
+        taskGroup.setPreAndPostTasks(
+                () -> log.debug("任务组{}执行完毕", groupName),
+                () -> log.debug("任务组{}开始执行", groupName));
         for (int j = 0; j < jobSize; j++) {
             PlanB planB = new PlanB();
             planB.name = "执行计划" + j;
