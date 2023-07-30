@@ -2,6 +2,7 @@ package fun.gatsby.commons.schedule;
 
 
 import cn.hutool.core.date.LocalDateTimeUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.temporal.ChronoUnit;
 public abstract class BaseTask implements ITask {
 
     public Thread threadToRun;
+    @Getter
     protected TaskStateEnum state = TaskStateEnum.NEW;
     private LocalDateTime startDate;
 
@@ -32,13 +34,5 @@ public abstract class BaseTask implements ITask {
     public void onError(Throwable e) {
         state = TaskStateEnum.ERROR;
         log.error("任务执行异常",e);
-    }
-
-    public TaskStateEnum getState() {
-        return state;
-    }
-
-    public void setState(TaskStateEnum state) {
-        this.state = state;
     }
 }

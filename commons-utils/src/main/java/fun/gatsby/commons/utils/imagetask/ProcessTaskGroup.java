@@ -12,6 +12,15 @@ public class ProcessTaskGroup extends TaskGroup<Runnable> {
 
     LocalDateTime startDateTime;
 
+    Runnable preTask=()->{
+        startDateTime = LocalDateTime.now();
+    };
+    Runnable postTask=()->{
+        long between = LocalDateTimeUtil.between(startDateTime, LocalDateTime.now(), ChronoUnit.SECONDS);
+        String hms = genHMS(between);
+        log.info("任务组: {} 执行完毕，总共耗时: {}, 单个任务耗时: {} s", name, hms, between / this.size());
+    };
+
     public ProcessTaskGroup(String name) {
         super();
         this.name = name;
@@ -38,17 +47,4 @@ public class ProcessTaskGroup extends TaskGroup<Runnable> {
         str += (s < 10 ? ("0" + s) : s);
         return str;
     }
-
-    @Override
-    public synchronized void beforeFirstStart() {
-        startDateTime = LocalDateTime.now();
-    }
-
-    @Override
-    public void afterAllDone() {
-        long between = LocalDateTimeUtil.between(startDateTime, LocalDateTime.now(), ChronoUnit.SECONDS);
-        String hms = genHMS(between);
-        log.info("任务组: {} 执行完毕，总共耗时: {}, 单个任务耗时: {} s", name, hms, between / this.size());
-    }
-
 }
