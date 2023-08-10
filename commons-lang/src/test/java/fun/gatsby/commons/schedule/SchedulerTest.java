@@ -1,8 +1,11 @@
 package fun.gatsby.commons.schedule;
 
+import fun.gatsby.commons.schedule.Scheduler;
+import fun.gatsby.commons.schedule.TaskGroup;
 import junit.framework.TestCase;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,7 +21,7 @@ public class SchedulerTest extends TestCase {
     public void testExecutor() {
 
         List<Runnable> tasks = genTasks();
-        ExecutorService threadPool = Executors.newFixedThreadPool(3);
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
         tasks.forEach(threadPool::submit);
         threadPool.shutdown();
         boolean terminated;
@@ -30,7 +33,7 @@ public class SchedulerTest extends TestCase {
 
     public void testScheduler() {
         List<Runnable> tasks = genTasks();
-        Scheduler scheduler = Scheduler.schedule(3, tasks);
+        Scheduler scheduler = Scheduler.schedule(4, tasks);
         scheduler.start();
         scheduler.await();
 
@@ -47,8 +50,11 @@ public class SchedulerTest extends TestCase {
 
         var taskGroupOfAll = new LinkedList<Runnable>();
         IntStream.range(0, userSize).forEach(i -> {
-            TaskGroup<Runnable> taskGroup = new TaskGroup();
-            taskGroup.setName("组" + i);
+            TaskGroup<Runnable> taskGroup = new TaskGroup<>();
+            taskGroup.setPreAndPostTasks(
+                    () -> log.info("任务组 {} 开始",taskGroup.hashCode()),
+                    () -> log.info("任务组 {} 完成",taskGroup.hashCode())
+            );
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setName("用户" + i + ",执行计划" + j);
@@ -58,6 +64,11 @@ public class SchedulerTest extends TestCase {
         });
         return taskGroupOfAll;
     }
+
+    @Test
+    public void t3() {
+    }
+
 }
 
 /**

@@ -35,9 +35,11 @@ public class ConsoleBarTest {
         var taskGroupOfAll = new LinkedList<Runnable>();
         for (int i = 0; i < userSize; i++) {
             TaskGroup taskGroup = new TaskGroup();
-            taskGroup.setTaskAfterAllDone(() -> {
-                log.info(taskGroup.getName() + "done");
-            });
+            taskGroup.setPreAndPostTasks(() ->
+                log.info("任务组 {} done",taskGroup.hashCode()),
+                        null
+                        );
+
             for (int j = 0; j < jobSize; j++) {
                 MyPlan myPlan = new MyPlan();
                 myPlan.setBar(bar);

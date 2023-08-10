@@ -50,7 +50,7 @@ public class TaskScheduleForkJoinPool extends ForkJoinPool {
         }
     }
 
-    ForkJoinTask<?> runTaskGroup(List<Runnable> tasks) throws ExecutionException, InterruptedException {
+    ForkJoinTask<?> runTaskGroup(List<Runnable> tasks) {
         return this.submit(() -> tasks.parallelStream().forEach(Runnable::run));
     }
 
